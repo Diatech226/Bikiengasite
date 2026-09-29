@@ -1,7 +1,7 @@
 import { ArticleItem } from '../types';
 import { HOME_ARTICLES } from './content';
-
-export const STORAGE_KEY_BLOG = 'nagreogo_blog_articles';
+import { STORAGE_KEYS } from '../constants/storage';
+import { storage } from '../services/storage';
 
 export const PRESET_CATEGORIES = [
   'Méditation & Spiritualité',
@@ -73,23 +73,10 @@ export const INITIAL_BLOG_ARTICLES: ArticleItem[] = HOME_ARTICLES.map((art, idx)
 }));
 
 export function getStoredBlogArticles(): ArticleItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_BLOG);
-    if (!raw) return INITIAL_BLOG_ARTICLES;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
-    }
-  } catch (err) {
-    console.error('Erreur chargement articles du blog:', err);
-  }
-  return INITIAL_BLOG_ARTICLES;
+  const articles = storage.get<ArticleItem[]>(STORAGE_KEYS.articles, INITIAL_BLOG_ARTICLES);
+  return Array.isArray(articles) && articles.length > 0 ? articles : INITIAL_BLOG_ARTICLES;
 }
 
 export function saveStoredBlogArticles(articles: ArticleItem[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY_BLOG, JSON.stringify(articles));
-  } catch (err) {
-    console.error('Erreur sauvegarde articles du blog:', err);
-  }
+  storage.set(STORAGE_KEYS.articles, articles);
 }

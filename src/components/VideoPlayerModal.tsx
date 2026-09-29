@@ -25,7 +25,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isPlaying) {
       interval = setInterval(() => {
         setProgress((prev) => (prev >= 100 ? 0 : prev + 0.5));

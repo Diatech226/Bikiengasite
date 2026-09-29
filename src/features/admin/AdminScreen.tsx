@@ -1,6 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { ArticleItem } from '../types';
-import { PRESET_CATEGORIES, PRESET_IMAGES } from '../data/blogStore';
+import { ArticleItem } from '../../types';
+import { PRESET_CATEGORIES, PRESET_IMAGES } from '../../data/blogStore';
+import { adminAuth } from '../../services/adminAuth';
+import { useToast } from '../../hooks/useToast';
+import { AdminLogin } from './components/AdminLogin';
+import { AdminToast } from './components/AdminToast';
+import { DeleteArticleModal } from './components/DeleteArticleModal';
 
 interface AdminScreenProps {
   articles: ArticleItem[];
@@ -26,9 +31,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   onExitAdmin,
 }) => {
   // Authentication / PIN code guard
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('nagreogo_admin_auth') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(adminAuth.hasSession);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
 
@@ -60,19 +63,13 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   const [articleToDelete, setArticleToDelete] = useState<ArticleItem | null>(null);
 
   // Live Toast inside Admin
-  const [adminToast, setAdminToast] = useState<string | null>(null);
-
-  const triggerToast = (msg: string) => {
-    setAdminToast(msg);
-    setTimeout(() => setAdminToast(null), 3000);
-  };
+  const { message: adminToast, showToast: triggerToast } = useToast(3000);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Default PIN or quick bypass: accepts 1234 or empty/admin
-    if (pinInput === '1234' || pinInput.toLowerCase() === 'admin' || pinInput === '2026') {
+    if (adminAuth.authenticate(pinInput)) {
       setIsAuthenticated(true);
-      localStorage.setItem('nagreogo_admin_auth', 'true');
       setPinError(false);
       triggerToast('Connexion réussie au Secrétariat de Nagréogo');
     } else {
@@ -82,14 +79,14 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
 
   const handleQuickLogin = () => {
     setIsAuthenticated(true);
-    localStorage.setItem('nagreogo_admin_auth', 'true');
+    adminAuth.openDemoSession();
     setPinError(false);
     triggerToast('Accès direct autorisé au Secrétariat');
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('nagreogo_admin_auth');
+    adminAuth.logout();
     setPinInput('');
   };
 
@@ -286,86 +283,16 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     });
   }, [articles, searchQuery, statusFilter, selectedCategory]);
 
-  // If not authenticated, render Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#c1c8c2]/50 flex flex-col gap-6">
-          <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-16 h-16 rounded-2xl bg-[#012d1d] text-[#ffca98] flex items-center justify-center shadow-md">
-              <span className="material-symbols-outlined text-[34px]">admin_panel_settings</span>
-            </div>
-            <span className="font-label-sm text-xs font-bold text-[#7d562d] uppercase tracking-wider mt-2">
-              Secrétariat & Rédaction
-            </span>
-            <h2 className="font-headline-sm text-2xl font-bold text-[#012d1d]">
-              Espace Administration
-            </h2>
-            <p className="text-xs text-[#414844] max-w-xs leading-relaxed">
-              Gestion éditoriale, publication des enseignements et chroniques de Nagréogo.
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[#012d1d] flex items-center justify-between">
-                <span>Code d'accès administrateur</span>
-                <span className="text-[11px] text-[#717973] font-normal">Par défaut : 1234</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={pinInput}
-                  onChange={(e) => {
-                    setPinInput(e.target.value);
-                    setPinError(false);
-                  }}
-                  placeholder="Saisissez le code PIN..."
-                  className={`w-full h-12 px-4 rounded-xl border bg-[#f3fbf5] text-[#151d1a] font-medium text-sm focus:outline-none transition-colors ${
-                    pinError
-                      ? 'border-red-500 focus:ring-2 focus:ring-red-200'
-                      : 'border-[#c1c8c2] focus:border-[#012d1d] focus:ring-2 focus:ring-[#c1ecd4]'
-                  }`}
-                  autoFocus
-                />
-                <span className="absolute right-3.5 top-3.5 text-[#717973] material-symbols-outlined text-[20px]">
-                  lock
-                </span>
-              </div>
-              {pinError && (
-                <span className="text-xs text-red-600 font-medium">
-                  Code incorrect. Utilisez le code par défaut : 1234 ou cliquez ci-dessous.
-                </span>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="w-full h-12 rounded-xl bg-[#012d1d] text-white font-label-md text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#1b4332] transition-colors shadow-sm active:scale-[0.98]"
-            >
-              <span className="material-symbols-outlined text-[20px]">login</span>
-              <span>Déverrouiller l'administration</span>
-            </button>
-          </form>
-
-          <div className="pt-4 border-t border-[#e2eae4] flex flex-col gap-3">
-            <button
-              onClick={handleQuickLogin}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#ffca98]/40 hover:bg-[#ffca98]/70 text-[#623f18] text-xs font-bold transition-colors flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[18px]">verified_user</span>
-              <span>Accès rapide direct (Mode Démo)</span>
-            </button>
-
-            <button
-              onClick={onExitAdmin}
-              className="text-xs text-[#717973] hover:text-[#012d1d] font-semibold text-center transition-colors"
-            >
-              ← Retour au site public
-            </button>
-          </div>
-        </div>
-      </div>
+      <AdminLogin
+        pin={pinInput}
+        hasError={pinError}
+        onPinChange={(pin) => { setPinInput(pin); setPinError(false); }}
+        onSubmit={handleLogin}
+        onQuickLogin={handleQuickLogin}
+        onExit={onExitAdmin}
+      />
     );
   }
 
@@ -1132,56 +1059,13 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {articleToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div
-            className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-red-200 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[28px]">delete_forever</span>
-            </div>
+      <DeleteArticleModal
+        article={articleToDelete}
+        onCancel={() => setArticleToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
 
-            <div>
-              <h3 className="font-headline-sm text-lg font-bold text-[#012d1d]">
-                Confirmer la suppression
-              </h3>
-              <p className="text-xs text-[#414844] mt-1 leading-relaxed">
-                Êtes-vous sûr de vouloir supprimer l'article suivant ?
-              </p>
-              <div className="p-3 mt-2 bg-[#f3fbf5] rounded-xl border border-[#c1c8c2]/50 text-xs font-bold text-[#012d1d]">
-                « {articleToDelete.title} »
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setArticleToDelete(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#414844] hover:bg-[#e2eae4] transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
-              >
-                Supprimer définitivement
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Toast Feedback */}
-      {adminToast && (
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-[#012d1d] text-white text-xs font-semibold shadow-xl flex items-center gap-2 border border-[#c1ecd4]/30 animate-in fade-in slide-in-from-bottom-2">
-          <span className="material-symbols-outlined text-[18px] text-[#ffca98]">
-            check_circle
-          </span>
-          <span>{adminToast}</span>
-        </div>
-      )}
+      <AdminToast message={adminToast} />
     </div>
   );
 };

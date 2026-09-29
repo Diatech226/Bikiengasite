@@ -19,13 +19,11 @@ import { HomeScreen } from './screens/HomeScreen';
 import { AgricultureScreen } from './screens/AgricultureScreen';
 import { ElevageScreen } from './screens/ElevageScreen';
 import { HumanitaireScreen } from './screens/HumanitaireScreen';
-import { AdminScreen } from './screens/AdminScreen';
+import { AdminScreen } from './features/admin/AdminScreen';
 import { ArticleItem, TabType, VideoItem } from './types';
-import {
-  getStoredBlogArticles,
-  saveStoredBlogArticles,
-  INITIAL_BLOG_ARTICLES,
-} from './data/blogStore';
+import { useToast } from './hooks/useToast';
+import { useArticles } from './features/articles/hooks/useArticles';
+import { useBookmarks } from './features/bookmarks/hooks/useBookmarks';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<TabType>('accueil');
@@ -38,123 +36,17 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
 
-  // Dynamic Blog Articles State (persisted in localStorage)
-  const [articles, setArticles] = useState<ArticleItem[]>(() => {
-    return getStoredBlogArticles();
-  });
-
-  // Bookmarks state (persistent in localStorage if available)
-  const [bookmarks, setBookmarks] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('nagreogo_bookmarks');
-      return saved ? JSON.parse(saved) : ['recette-mais-sorgho-2024'];
-    } catch {
-      return ['recette-mais-sorgho-2024'];
-    }
-  });
-
-  // Toast feedback
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 2800);
-  };
-
-  // Blog CRUD Handlers
-  const handleAddArticle = (newArt: Omit<ArticleItem, 'id'>) => {
-    const slug = newArt.title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
-    const newId = `${slug}-${Date.now().toString().slice(-4)}`;
-    const fullItem: ArticleItem = {
-      ...newArt,
-      id: newId,
-    };
-
-    setArticles((prev) => {
-      const updated = [fullItem, ...prev];
-      saveStoredBlogArticles(updated);
-      return updated;
-    });
-    showToast(`Publication ajoutée : « ${newArt.title.substring(0, 24)}... »`);
-  };
-
-  const handleUpdateArticle = (id: string, updatedFields: Partial<ArticleItem>) => {
-    setArticles((prev) => {
-      const updated = prev.map((art) => (art.id === id ? { ...art, ...updatedFields } : art));
-      saveStoredBlogArticles(updated);
-      return updated;
-    });
-    showToast('Article mis à jour avec succès');
-  };
-
-  const handleDeleteArticle = (id: string) => {
-    setArticles((prev) => {
-      const updated = prev.filter((art) => art.id !== id);
-      saveStoredBlogArticles(updated);
-      return updated;
-    });
-    showToast('Article supprimé de la base');
-  };
-
-  const handleToggleStatus = (id: string) => {
-    setArticles((prev) => {
-      const updated = prev.map((art) => {
-        if (art.id === id) {
-          const nextStatus: 'published' | 'draft' = (art.status || 'published') === 'published' ? 'draft' : 'published';
-          showToast(nextStatus === 'published' ? 'Article mis en ligne' : 'Article passé en brouillon');
-          return { ...art, status: nextStatus };
-        }
-        return art;
-      });
-      saveStoredBlogArticles(updated);
-      return updated;
-    });
-  };
-
-  const handleToggleFeatured = (id: string) => {
-    setArticles((prev) => {
-      const updated = prev.map((art) => {
-        if (art.id === id) {
-          const nextFeatured = !art.isFeatured;
-          showToast(nextFeatured ? 'Article épinglé à la une' : 'Article retiré de la une');
-          return { ...art, isFeatured: nextFeatured };
-        }
-        return art;
-      });
-      saveStoredBlogArticles(updated);
-      return updated;
-    });
-  };
-
-  const handleResetDefaultArticles = () => {
-    setArticles(INITIAL_BLOG_ARTICLES);
-    saveStoredBlogArticles(INITIAL_BLOG_ARTICLES);
-    showToast('Articles de démonstration rétablis');
-  };
-
-  const handleToggleBookmark = (id: string, title: string) => {
-    setBookmarks((prev) => {
-      let updated: string[];
-      if (prev.includes(id)) {
-        updated = prev.filter((item) => item !== id);
-        showToast(`Retiré des enregistrements`);
-      } else {
-        updated = [...prev, id];
-        showToast(`Enregistré dans vos favoris`);
-      }
-      try {
-        localStorage.setItem('nagreogo_bookmarks', JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-  };
+  const { message: toastMessage, showToast } = useToast();
+  const { bookmarks, toggleBookmark: handleToggleBookmark } = useBookmarks(showToast);
+  const {
+    articles,
+    addArticle: handleAddArticle,
+    updateArticle: handleUpdateArticle,
+    deleteArticle: handleDeleteArticle,
+    toggleStatus: handleToggleStatus,
+    toggleFeatured: handleToggleFeatured,
+    resetArticles: handleResetDefaultArticles,
+  } = useArticles(showToast);
 
   const handleShare = (title: string, desc: string) => {
     if (navigator.share) {
