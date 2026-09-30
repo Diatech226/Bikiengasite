@@ -1,0 +1,1 @@
+import{Module}from'@nestjs/common';import{DonationsController,AdminDonationsController}from'./donations.controller';import{DonationsService}from'./donations.service';@Module({controllers:[DonationsController,AdminDonationsController],providers:[DonationsService]})export class DonationsModule{}

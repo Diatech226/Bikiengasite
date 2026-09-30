@@ -2,6 +2,7 @@ export type TabType = 'accueil' | 'agriculture' | 'elevage' | 'humanitaire' | 'a
 
 export interface VideoItem {
   id: string;
+  slug?: string;
   title: string;
   category: string;
   tagLabel: string;
@@ -22,6 +23,7 @@ export interface VideoItem {
 
 export interface ArticleItem {
   id: string;
+  slug?: string;
   title: string;
   date: string;
   readTime: string;
@@ -30,6 +32,7 @@ export interface ArticleItem {
   excerpt: string;
   fullText: string;
   category: string;
+  categoryId?: string;
   status?: 'published' | 'draft';
   author?: string;
   isFeatured?: boolean;

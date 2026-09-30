@@ -46,6 +46,7 @@ export default function App() {
     toggleStatus: handleToggleStatus,
     toggleFeatured: handleToggleFeatured,
     resetArticles: handleResetDefaultArticles,
+    refresh: refreshArticles,
   } = useArticles(showToast);
 
   const handleShare = (title: string, desc: string) => {
@@ -144,6 +145,7 @@ export default function App() {
               onResetDefault={handleResetDefaultArticles}
               onPreviewArticle={(art) => setActiveArticle(art)}
               onExitAdmin={() => setCurrentTab('accueil')}
+              onAuthenticated={() => void refreshArticles(true)}
             />
           )}
         </main>

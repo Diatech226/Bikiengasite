@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { donationApi } from '../services/donationApi';
 
 interface DonationModalProps {
   onClose: () => void;
@@ -12,6 +13,8 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const [amount, setAmount] = useState('50 000 FCFA');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const categories = [
     { id: 'forage', label: 'Eau Potable & Forage Solaire (Puits N°39)' },
@@ -21,10 +24,12 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
     { id: 'materiel', label: 'Don en nature (outils agricoles, semences, panneaux)' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    setSubmitted(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
+    const numericAmount = Number(amount.replace(/[^0-9]/g, ''));
+    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), type: category, amount: numericAmount || undefined, message: message.trim() || undefined }); setSubmitted(true); }
+    catch (err) { setError(err instanceof Error ? err.message : 'La demande n’a pas pu être transmise.'); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -150,12 +155,14 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   />
                 </div>
 
+                {error && <p role="alert" className="text-xs font-semibold text-red-700 bg-red-50 p-2 rounded-lg">{error}</p>}
                 <button
                   type="submit"
-                  className="w-full h-12 rounded-xl bg-[#012d1d] text-white font-label-md text-sm font-bold shadow-md hover:bg-[#1b4332] transition-all flex items-center justify-center gap-2 mt-1 active:scale-[0.98]"
+                  disabled={loading}
+                  className="w-full h-12 disabled:opacity-60 rounded-xl bg-[#012d1d] text-white font-label-md text-sm font-bold shadow-md hover:bg-[#1b4332] transition-all flex items-center justify-center gap-2 mt-1 active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>Transmettre mon soutien</span>
+                  <span>{loading ? 'Transmission…' : 'Transmettre mon soutien'}</span>
                 </button>
               </form>
             </>

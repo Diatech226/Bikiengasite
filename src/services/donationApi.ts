@@ -1,0 +1,1 @@
+import{apiRequest}from'./api';export const donationApi={create:(data:{donorName:string;donorContact:string;type:string;amount?:number;message?:string})=>apiRequest('/donations',{method:'POST',body:JSON.stringify({...data,currency:'XOF'})})};

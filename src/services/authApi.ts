@@ -1,0 +1,3 @@
+import{apiRequest,hasRefreshToken,setTokens}from'./api';
+export interface AdminUser{id:string;email:string;firstName?:string;lastName?:string;role:'ADMIN'}
+export const authApi={async login(email:string,password:string){const result=await apiRequest<{accessToken:string;refreshToken:string;user:AdminUser}>('/auth/login',{method:'POST',body:JSON.stringify({email,password})});setTokens(result);return result.user},async restore(){if(!hasRefreshToken())return null;try{return await apiRequest<AdminUser>('/auth/me')}catch{return null}},async logout(){try{await apiRequest('/auth/logout',{method:'POST'})}finally{setTokens(null)}}};
