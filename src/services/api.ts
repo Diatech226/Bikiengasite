@@ -1,4 +1,6 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+const configuredApiUrl = import.meta.env.VITE_API_URL;
+if (!configuredApiUrl) throw new Error('VITE_API_URL doit être configurée au build');
+const API_URL = configuredApiUrl.replace(/\/$/, '');
 let accessToken: string | null = null;
 let refreshToken: string | null = typeof window === 'undefined' ? null : window.sessionStorage.getItem('bikienga_refresh');
 export function setTokens(tokens: { accessToken: string; refreshToken?: string } | null) { accessToken = tokens?.accessToken ?? null; if (tokens?.refreshToken) refreshToken = tokens.refreshToken; if (!tokens) refreshToken = null; if (typeof window !== 'undefined') { if (refreshToken) window.sessionStorage.setItem('bikienga_refresh', refreshToken); else window.sessionStorage.removeItem('bikienga_refresh'); } }

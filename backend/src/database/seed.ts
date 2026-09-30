@@ -24,7 +24,7 @@ async function seed() {
   const Category = mongoose.model('Category', CategorySchema);
   const Article = mongoose.model('Article', ArticleSchema);
   const passwordHash = await argon2.hash(password);
-  await User.updateOne({ email }, { $set: { email, passwordHash, firstName: process.env.ADMIN_FIRST_NAME, lastName: process.env.ADMIN_LAST_NAME, role: UserRole.ADMIN, isActive: true } }, { upsert: true, runValidators: true });
+  await User.updateOne({ email }, { $setOnInsert: { email, passwordHash, firstName: process.env.ADMIN_FIRST_NAME, lastName: process.env.ADMIN_LAST_NAME, role: UserRole.ADMIN, isActive: true } }, { upsert: true, runValidators: true });
   const categoryIds = new Map<string, mongoose.Types.ObjectId>();
   for (const name of categories) {
     const slug = slugify(name, { lower: true, strict: true, locale: 'fr' });
@@ -35,7 +35,7 @@ async function seed() {
     const { category, featured, publishedAt, ...articleData } = article;
     await Article.updateOne({ slug: article.slug }, { $setOnInsert: { ...articleData, categoryId: categoryIds.get(category), author: 'Cheick Bikienga Seydou', status: ArticleStatus.PUBLISHED, publishedAt: new Date(publishedAt), isFeatured: featured } }, { upsert: true, runValidators: true });
   }
-  console.log(`Seed terminé : administrateur ${email}, ${categories.length} catégories, ${articles.length} articles initiaux.`);
+  console.log(`Seed terminé : administrateur vérifié, ${categories.length} catégories, ${articles.length} articles initiaux.`);
 }
 
 seed().finally(() => mongoose.disconnect()).catch((error: unknown) => { console.error(error); process.exitCode = 1; });

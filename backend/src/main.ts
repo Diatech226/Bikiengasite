@@ -18,11 +18,18 @@ async function bootstrap() {
   app.use(compression());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true, transformOptions: { enableImplicitConversion: false } }));
   app.useGlobalFilters(new HttpExceptionFilter());
-  const origins = config.getOrThrow<string>('FRONTEND_URL').split(',').map((origin) => origin.trim());
-  app.enableCors({ origin: origins, credentials: true, methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] });
-  const document = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('Bikienga API').setDescription('API persistante du site Bikienga — les dons sont indépendants de toute autre fonctionnalité').setVersion('1.0').addBearerAuth().build());
-  SwaggerModule.setup('api/docs', app, document);
-  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  const origins = [...new Set(config.getOrThrow<string>('FRONTEND_URL').split(',').map((origin) => origin.trim()).filter(Boolean))];
+  app.enableCors({
+    origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => callback(null, !origin || origins.includes(origin)),
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
+  if (config.get<boolean>('ENABLE_SWAGGER', false)) {
+    const document = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('Bikienga API').setDescription('API persistante du site Bikienga').setVersion('1.0').addBearerAuth().build());
+    SwaggerModule.setup('api/docs', app, document);
+  }
+  app.getHttpAdapter().getInstance().set('trust proxy', config.get('NODE_ENV') === 'production' ? 1 : false);
+  app.enableShutdownHooks();
   await app.listen(config.get<number>('PORT', 5000), '0.0.0.0');
 }
 void bootstrap();

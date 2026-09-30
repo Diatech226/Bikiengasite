@@ -2,6 +2,5 @@
   "name": "Sillon Sahélien - Nagréogo & Cheick Bikienga",
   "description": "L'Œuvre, les réalisations agropastorales et la solidarité sahélienne à Nagréogo portées par le Cheick Bikienga Seydou.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }
-
