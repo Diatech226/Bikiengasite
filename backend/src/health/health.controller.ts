@@ -1,1 +1,20 @@
-import{Controller,Get,ServiceUnavailableException}from'@nestjs/common';import{ApiTags}from'@nestjs/swagger';import{PrismaService}from'../prisma/prisma.service';@ApiTags('Health')@Controller('health')export class HealthController{constructor(private p:PrismaService){}@Get()async get(){try{await this.p.$queryRaw`SELECT 1`;return{status:'ok',database:'connected'}}catch{throw new ServiceUnavailableException({status:'error',database:'disconnected'})}}}
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
+import { ApiTags } from '@nestjs/swagger';
+import { Connection } from 'mongoose';
+
+@ApiTags('Health')
+@Controller('health')
+export class HealthController {
+  constructor(@InjectConnection() private readonly connection: Connection) {}
+  @Get()
+  async get() {
+    try {
+      if (this.connection.readyState !== 1 || !this.connection.db) throw new Error('MongoDB déconnecté');
+      await this.connection.db.admin().ping();
+      return { status: 'ok', database: 'connected' };
+    } catch {
+      throw new ServiceUnavailableException({ status: 'error', database: 'disconnected' });
+    }
+  }
+}

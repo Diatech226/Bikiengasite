@@ -1,17 +1,120 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'; import { ArticleStatus, Prisma } from '@prisma/client'; import slugify from 'slugify';
-import { createHash } from 'crypto'; import { ConfigService } from '@nestjs/config'; import { PrismaService } from '../prisma/prisma.service'; import { ArticleQueryDto, CreateArticleDto, UpdateArticleDto } from './dto/article.dto';
-@Injectable() export class ArticlesService {
- constructor(private prisma: PrismaService, private config: ConfigService) {}
- private async slug(title: string, exclude?: string) { const base = slugify(title, { lower: true, strict: true, locale: 'fr' }) || 'article'; let value=base, i=2; while(await this.prisma.article.findFirst({where:{slug:value,...(exclude?{id:{not:exclude}}:{})}})) value=`${base}-${i++}`; return value; }
- private include = { category: true } as const;
- async list(q: ArticleQueryDto, admin=false) { const where: Prisma.ArticleWhereInput={...(admin?{}:{status:'PUBLISHED'}),...(q.category?{category:{slug:q.category}}:{}),...(q.search?{OR:[{title:{contains:q.search,mode:'insensitive'}},{excerpt:{contains:q.search,mode:'insensitive'}}]}:{})}; const orderBy: Prisma.ArticleOrderByWithRelationInput=q.sort==='oldest'?{publishedAt:'asc'}:q.sort==='popular'?{viewsCount:'desc'}:{publishedAt:'desc'}; const [data,total]=await this.prisma.$transaction([this.prisma.article.findMany({where,include:this.include,orderBy,skip:(q.page-1)*q.limit,take:q.limit}),this.prisma.article.count({where})]); return {data,meta:{page:q.page,limit:q.limit,total,totalPages:Math.ceil(total/q.limit)}}; }
- async featured() { return this.prisma.article.findMany({where:{status:'PUBLISHED',isFeatured:true},include:this.include,orderBy:{publishedAt:'desc'}}); }
- async bySlug(slug:string) { const item=await this.prisma.article.findFirst({where:{slug,status:'PUBLISHED'},include:this.include}); if(!item) throw new NotFoundException('Article introuvable'); return item; }
- async create(dto:CreateArticleDto) { return this.prisma.article.create({data:{...dto,slug:await this.slug(dto.title),publishedAt:dto.status==='PUBLISHED'?new Date():null},include:this.include}); }
- async update(id:string,dto:UpdateArticleDto) { await this.require(id); const current=await this.prisma.article.findUniqueOrThrow({where:{id}}); return this.prisma.article.update({where:{id},data:{...dto,...(dto.title?{slug:await this.slug(dto.title,id)}:{}),...(dto.status?{publishedAt:dto.status==='PUBLISHED'?(current.publishedAt??new Date()):null}:{})},include:this.include}); }
- async remove(id:string) { await this.require(id); await this.prisma.article.delete({where:{id}}); return {success:true}; }
- status(id:string,status:ArticleStatus) { return this.update(id,{status}); }
- featuredStatus(id:string,isFeatured:boolean) { return this.update(id,{isFeatured}); }
- async view(id:string,identity:string) { const article=await this.prisma.article.findFirst({where:{id,status:'PUBLISHED'}}); if(!article) throw new NotFoundException('Article introuvable'); const bucket=new Date(); bucket.setUTCMinutes(0,0,0); const visitorHash=createHash('sha256').update(identity+this.config.getOrThrow('VIEW_HASH_SECRET')).digest('hex'); try { await this.prisma.$transaction([this.prisma.articleView.create({data:{articleId:id,visitorHash,bucket}}),this.prisma.article.update({where:{id},data:{viewsCount:{increment:1}}})]); return {counted:true}; } catch(e) { if(e instanceof Prisma.PrismaClientKnownRequestError && e.code==='P2002') return {counted:false}; throw e; } }
- private async require(id:string) { if(!await this.prisma.article.findUnique({where:{id},select:{id:true}})) throw new NotFoundException('Article introuvable'); }
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
+import { createHash } from 'crypto';
+import { FilterQuery, Model, Query, Types } from 'mongoose';
+import slugify from 'slugify';
+import { Category } from '../categories/schemas/category.schema';
+import { ArticleQueryDto, CreateArticleDto, UpdateArticleDto } from './dto/article.dto';
+import { ArticleView } from './schemas/article-view.schema';
+import { Article, ArticleDocument, ArticleStatus } from './schemas/article.schema';
+
+@Injectable()
+export class ArticlesService {
+  constructor(
+    @InjectModel(Article.name) private readonly articles: Model<Article>,
+    @InjectModel(ArticleView.name) private readonly articleViews: Model<ArticleView>,
+    @InjectModel(Category.name) private readonly categories: Model<Category>,
+    private readonly config: ConfigService,
+  ) {}
+
+  private readonly categoryPopulate = { path: 'categoryId', select: 'name slug', options: { virtuals: true } } as const;
+
+  private present(document: ArticleDocument) {
+    const value = document.toJSON() as Record<string, unknown>;
+    value.category = value.categoryId;
+    delete value.categoryId;
+    return value;
+  }
+
+  private async uniqueSlug(title: string, excludeId?: string) {
+    const base = slugify(title, { lower: true, strict: true, locale: 'fr' }) || 'article';
+    let value = base;
+    let suffix = 2;
+    while (await this.articles.exists({ slug: value, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })) value = `${base}-${suffix++}`;
+    return value;
+  }
+
+  private async populated(query: Query<ArticleDocument | null, ArticleDocument>) {
+    const article = await query.populate(this.categoryPopulate).exec();
+    return article ? this.present(article) : null;
+  }
+
+  async list(query: ArticleQueryDto, admin = false) {
+    const filter: FilterQuery<Article> = admin ? {} : { status: ArticleStatus.PUBLISHED };
+    if (query.category) {
+      const category = await this.categories.findOne({ slug: query.category }).select('_id').lean().exec();
+      filter.categoryId = category?._id ?? new Types.ObjectId();
+    }
+    if (query.search) {
+      const escaped = query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [{ title: { $regex: escaped, $options: 'i' } }, { excerpt: { $regex: escaped, $options: 'i' } }];
+    }
+    const sort = query.sort === 'oldest' ? { publishedAt: 1 as const } : query.sort === 'popular' ? { viewsCount: -1 as const } : { publishedAt: -1 as const };
+    const [documents, total] = await Promise.all([
+      this.articles.find(filter).populate(this.categoryPopulate).sort(sort).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
+      this.articles.countDocuments(filter).exec(),
+    ]);
+    return { data: documents.map((document) => this.present(document)), meta: { page: query.page, limit: query.limit, total, totalPages: Math.ceil(total / query.limit) } };
+  }
+
+  async featured() {
+    const documents = await this.articles.find({ status: ArticleStatus.PUBLISHED, isFeatured: true }).populate(this.categoryPopulate).sort({ publishedAt: -1 }).exec();
+    return documents.map((document) => this.present(document));
+  }
+
+  async bySlug(slug: string) {
+    const article = await this.populated(this.articles.findOne({ slug, status: ArticleStatus.PUBLISHED }));
+    if (!article) throw new NotFoundException('Article introuvable');
+    return article;
+  }
+
+  async create(dto: CreateArticleDto) {
+    if (!(await this.categories.exists({ _id: dto.categoryId }))) throw new NotFoundException('Catégorie introuvable');
+    const document = await this.articles.create({ ...dto, slug: await this.uniqueSlug(dto.title), publishedAt: dto.status === ArticleStatus.PUBLISHED ? new Date() : null });
+    return (await this.populated(this.articles.findById(document._id)))!;
+  }
+
+  async update(id: string, dto: UpdateArticleDto) {
+    const current = await this.require(id);
+    if (dto.categoryId && !(await this.categories.exists({ _id: dto.categoryId }))) throw new NotFoundException('Catégorie introuvable');
+    const update = {
+      ...dto,
+      ...(dto.title ? { slug: await this.uniqueSlug(dto.title, id) } : {}),
+      ...(dto.status ? { publishedAt: dto.status === ArticleStatus.PUBLISHED ? current.publishedAt ?? new Date() : null } : {}),
+    };
+    const article = await this.populated(this.articles.findByIdAndUpdate(id, update, { new: true, runValidators: true }));
+    if (!article) throw new NotFoundException('Article introuvable');
+    return article;
+  }
+
+  async remove(id: string) {
+    await this.require(id);
+    await Promise.all([this.articles.deleteOne({ _id: id }), this.articleViews.deleteMany({ articleId: id })]);
+    return { success: true };
+  }
+
+  status(id: string, status: ArticleStatus) { return this.update(id, { status }); }
+  featuredStatus(id: string, isFeatured: boolean) { return this.update(id, { isFeatured }); }
+
+  async view(id: string, identity: string) {
+    if (!(await this.articles.exists({ _id: id, status: ArticleStatus.PUBLISHED }))) throw new NotFoundException('Article introuvable');
+    const bucket = new Date();
+    bucket.setUTCMinutes(0, 0, 0);
+    const visitorHash = createHash('sha256').update(identity + this.config.getOrThrow('VIEW_HASH_SECRET')).digest('hex');
+    try {
+      await this.articleViews.create({ articleId: id, visitorHash, bucket });
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) return { counted: false };
+      throw error;
+    }
+    await this.articles.updateOne({ _id: id }, { $inc: { viewsCount: 1 } });
+    return { counted: true };
+  }
+
+  private async require(id: string) {
+    const article = await this.articles.findById(id).exec();
+    if (!article) throw new NotFoundException('Article introuvable');
+    return article;
+  }
 }
