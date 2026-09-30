@@ -1,4 +1,5 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Length, Max, MaxLength, Min } from 'class-validator';
 import { ContactRequestStatus, ContactRequestType } from '../schemas/contact-request.schema';
 
 export class CreateContactDto {
@@ -9,6 +10,8 @@ export class CreateContactDto {
   @IsOptional() @IsString() @MaxLength(3000) message?: string;
 }
 export class ContactQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 20;
   @IsOptional() @IsEnum(ContactRequestStatus) status?: ContactRequestStatus;
   @IsOptional() @IsEnum(ContactRequestType) type?: ContactRequestType;
 }

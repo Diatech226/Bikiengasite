@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Length, Matches, Max, MaxLength, Min } from 'class-validator';
+import { IsDateString, IsEmail, IsEnum, IsInt, IsNumber, IsOptional, IsString, Length, Matches, Max, MaxLength, Min } from 'class-validator';
 import { DonationStatus } from '../schemas/donation.schema';
 
 export class CreateDonationDto {
@@ -12,6 +12,8 @@ export class CreateDonationDto {
   @IsOptional() @IsString() @MaxLength(2000) message?: string;
 }
 export class DonationQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 20;
   @IsOptional() @IsEnum(DonationStatus) status?: DonationStatus;
   @IsOptional() @IsString() @MaxLength(40) type?: string;
   @IsOptional() @IsDateString() from?: string;

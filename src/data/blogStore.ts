@@ -1,7 +1,3 @@
-import { ArticleItem } from '../types';
-import { HOME_ARTICLES } from './content';
-import { STORAGE_KEYS } from '../constants/storage';
-import { storage } from '../services/storage';
 
 export const PRESET_CATEGORIES = [
   'Méditation & Spiritualité',
@@ -62,21 +58,3 @@ export const PRESET_IMAGES = [
     alt: 'Cultures maraîchères et ombrières de protection à Nagréogo',
   },
 ];
-
-export const INITIAL_BLOG_ARTICLES: ArticleItem[] = HOME_ARTICLES.map((art, idx) => ({
-  ...art,
-  status: 'published' as const,
-  author: 'Cheick Bikienga Seydou',
-  isFeatured: idx === 0,
-  viewsCount: (idx + 1) * 1420 + 850,
-  updatedAt: art.date,
-}));
-
-export function getStoredBlogArticles(): ArticleItem[] {
-  const articles = storage.get<ArticleItem[]>(STORAGE_KEYS.articles, INITIAL_BLOG_ARTICLES);
-  return Array.isArray(articles) && articles.length > 0 ? articles : INITIAL_BLOG_ARTICLES;
-}
-
-export function saveStoredBlogArticles(articles: ArticleItem[]): void {
-  storage.set(STORAGE_KEYS.articles, articles);
-}

@@ -257,3 +257,15 @@
   scrollbar-width: none;
 }
 
+
+/* Shared administration controls */
+.admin-button { padding: .55rem .8rem; border-radius: .65rem; background: #e7f0ea; color: #012d1d; font-size: .75rem; font-weight: 700; }
+.admin-button:disabled { opacity: .45; }
+.admin-filters { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: .6rem; }
+.admin-filters input,.admin-filters select,.admin-row select,form input,form select,form textarea { border: 1px solid #c1c8c2; border-radius: .65rem; background: white; padding: .65rem; font-size: .8rem; }
+.admin-row { display:flex; flex-direction:column; gap:.75rem; justify-content:space-between; background:white; border:1px solid rgb(193 200 194 / .5); border-radius:1rem; padding:1rem; }
+.admin-row p,.admin-row time,.admin-row small { color:#57605a; font-size:.75rem; overflow-wrap:anywhere; }
+.admin-row>div:last-child { display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; }
+.admin-error { padding:.75rem; border-radius:.75rem; background:#fef2f2; color:#b91c1c; font-size:.8rem; }
+.admin-state { padding:2rem; text-align:center; color:#57605a; }
+@media (min-width:640px){.admin-row{flex-direction:row;align-items:center}.admin-row>div:last-child{justify-content:flex-end}}
