@@ -1,2 +1,31 @@
-import{useCallback,useEffect,useState}from'react';import{ArticleItem}from'../../../types';import{articleApi}from'../../../services/articleApi';
-export function useArticles(notify:(message:string)=>void){const[articles,setArticles]=useState<ArticleItem[]>([]);const[loading,setLoading]=useState(true);const[error,setError]=useState<string|null>(null);const refresh=useCallback(async(admin=false)=>{setLoading(true);try{setArticles(await articleApi.list(admin));setError(null)}catch(e){setError(e instanceof Error?e.message:'API indisponible')}finally{setLoading(false)}},[]);useEffect(()=>{void refresh()},[refresh]);const addArticle=useCallback(async(a:Omit<ArticleItem,'id'>)=>{const item=await articleApi.create(a);setArticles(x=>[item,...x]);notify(`Publication ajoutée : « ${a.title.substring(0,24)}... »`)},[notify]);const updateArticle=useCallback(async(id:string,a:Partial<ArticleItem>)=>{const item=await articleApi.update(id,a);setArticles(x=>x.map(v=>v.id===id?item:v));notify('Article mis à jour avec succès')},[notify]);const deleteArticle=useCallback(async(id:string)=>{await articleApi.remove(id);setArticles(x=>x.filter(v=>v.id!==id));notify('Article supprimé de la base')},[notify]);const toggleStatus=useCallback(async(id:string)=>{const item=articles.find(x=>x.id===id);if(!item)return;const status=(item.status||'published')==='published'?'draft':'published';await articleApi.status(id,status);setArticles(x=>x.map(v=>v.id===id?{...v,status}:v));notify(status==='published'?'Article mis en ligne':'Article passé en brouillon')},[articles,notify]);const toggleFeatured=useCallback(async(id:string)=>{const item=articles.find(x=>x.id===id);if(!item)return;await articleApi.featured(id,!item.isFeatured);setArticles(x=>x.map(v=>v.id===id?{...v,isFeatured:!v.isFeatured}:v));notify(!item.isFeatured?'Article épinglé à la une':'Article retiré de la une')},[articles,notify]);const resetArticles=useCallback(()=>{void refresh(true);notify('Données rechargées depuis le serveur')},[notify,refresh]);return{articles,loading,error,refresh,addArticle,updateArticle,deleteArticle,toggleStatus,toggleFeatured,resetArticles}}
+import { useCallback, useEffect, useState } from 'react';
+import { articleApi } from '../../../services/articleApi';
+import { ArticleItem } from '../../../types';
+
+/** Public article state. This hook never calls an authenticated/admin endpoint. */
+export function useArticles() {
+  const [articles, setArticles] = useState<ArticleItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    try {
+      setArticles(await articleApi.public.list(signal));
+      setError(null);
+    } catch (cause) {
+      if (cause instanceof DOMException && cause.name === 'AbortError') return;
+      setError(cause instanceof Error ? cause.message : 'API indisponible');
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void refresh(controller.signal);
+    return () => controller.abort();
+  }, [refresh]);
+
+  return { articles, loading, error, refresh: () => refresh() };
+}

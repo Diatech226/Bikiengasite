@@ -86,6 +86,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           ((a.status || 'published') === 'published') &&
           (a.title.toLowerCase().includes(query.toLowerCase()) ||
           a.excerpt.toLowerCase().includes(query.toLowerCase()) ||
+          a.fullText.toLowerCase().includes(query.toLowerCase()) ||
           a.category.toLowerCase().includes(query.toLowerCase()))
       )
     : [];

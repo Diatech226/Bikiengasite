@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArticleItem } from '../types';
+import { articleApi } from '../services/articleApi';
 
 interface ArticleModalProps {
   article: ArticleItem | null;
@@ -18,6 +19,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 }) => {
   const [isNarrating, setIsNarrating] = useState(false);
   const [fontSizeLarge, setFontSizeLarge] = useState(false);
+
+  useEffect(() => {
+    if (!article || !/^[a-f\d]{24}$/i.test(article.id)) return;
+    void articleApi.public.view(article.id).catch(() => {
+      // A view counter failure must never interrupt reading.
+    });
+  }, [article?.id]);
 
   if (!article) return null;
 

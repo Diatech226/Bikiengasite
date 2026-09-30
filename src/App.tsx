@@ -36,16 +36,7 @@ export default function App() {
 
   const { message: toastMessage, showToast } = useToast();
   const { bookmarks, toggleBookmark: handleToggleBookmark } = useBookmarks(showToast);
-  const {
-    articles,
-    addArticle: handleAddArticle,
-    updateArticle: handleUpdateArticle,
-    deleteArticle: handleDeleteArticle,
-    toggleStatus: handleToggleStatus,
-    toggleFeatured: handleToggleFeatured,
-    resetArticles: handleResetDefaultArticles,
-    refresh: refreshArticles,
-  } = useArticles(showToast);
+  const { articles, loading: articlesLoading, error: articlesError, refresh: refreshArticles } = useArticles();
 
   const handleShare = (title: string, desc: string) => {
     if (navigator.share) {
@@ -97,6 +88,9 @@ export default function App() {
               bookmarks={bookmarks}
               onToggleBookmark={handleToggleBookmark}
               onShare={handleShare}
+              articlesLoading={articlesLoading}
+              articlesError={articlesError}
+              onRetryArticles={() => void refreshArticles()}
             />
           )}
 
@@ -133,16 +127,11 @@ export default function App() {
 
           {currentTab === 'admin' && (
             <AdminScreen
-              articles={articles}
-              onAddArticle={handleAddArticle}
-              onUpdateArticle={handleUpdateArticle}
-              onDeleteArticle={handleDeleteArticle}
-              onToggleStatus={handleToggleStatus}
-              onToggleFeatured={handleToggleFeatured}
-              onResetDefault={handleResetDefaultArticles}
               onPreviewArticle={(art) => setActiveArticle(art)}
-              onExitAdmin={() => setCurrentTab('accueil')}
-              onAuthenticated={() => void refreshArticles(true)}
+              onExitAdmin={() => {
+                setCurrentTab('accueil');
+                void refreshArticles();
+              }}
             />
           )}
         </main>

@@ -81,7 +81,11 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   </label>
                   <select
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    onChange={(e) => {
+                      const nextCategory = e.target.value;
+                      setCategory(nextCategory);
+                      if (nextCategory === 'materiel') setAmount('');
+                    }}
                     className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs font-medium text-[#151d1a] focus:outline-none focus:ring-2 focus:ring-[#7d562d]"
                   >
                     {categories.map((c) => (

@@ -1,13 +1,4 @@
 
-export const PRESET_CATEGORIES = [
-  'Méditation & Spiritualité',
-  'Sécurité Alimentaire',
-  'Agro-écologie & Zaï',
-  'Élevage Pastoral',
-  'Œuvres & Solidarité',
-  'Jeunesse & Savoir',
-];
-
 export const PRESET_IMAGES = [
   {
     label: 'Moisson dorée & Terres nourricières',
