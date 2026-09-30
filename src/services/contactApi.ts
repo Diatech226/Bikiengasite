@@ -1,0 +1,1 @@
+import{apiRequest}from'./api';export type ContactType='DONATION'|'FORAGE'|'FOOD_SUPPORT'|'VOLUNTEERING'|'MATERIAL_SUPPORT'|'GENERAL';export const contactApi={create:(data:{name:string;phone:string;type:ContactType;message?:string})=>apiRequest('/contact-requests',{method:'POST',body:JSON.stringify(data)})};

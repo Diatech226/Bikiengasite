@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { contactApi, ContactType } from '../services/contactApi';
 import { HUMANITAIRE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
@@ -26,6 +27,8 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
   const [contactType, setContactType] = useState('forage');
   const [contactMessage, setContactMessage] = useState('');
   const [formFeedback, setFormFeedback] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState('');
   const [shareFeedback, setShareFeedback] = useState(false);
 
   const toggleExpand = (id: string) => {
@@ -53,17 +56,12 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!contactName.trim()) return;
-    setFormFeedback(true);
-    setTimeout(() => {
-      setFormFeedback(false);
-      setShowQuickForm(false);
-      setContactName('');
-      setContactPhone('');
-      setContactMessage('');
-    }, 3000);
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!contactName.trim() || formLoading) return; setFormLoading(true); setFormError('');
+    const types: Record<string, ContactType> = { forage: 'FORAGE', scolaire: 'DONATION', vivres: 'FOOD_SUPPORT', benevole: 'VOLUNTEERING' };
+    try { await contactApi.create({ name: contactName.trim(), phone: contactPhone.trim(), type: types[contactType] || 'GENERAL', message: contactMessage.trim() || undefined }); setFormFeedback(true); setContactName(''); setContactPhone(''); setContactMessage(''); }
+    catch (error) { setFormError(error instanceof Error ? error.message : 'Envoi impossible.'); }
+    finally { setFormLoading(false); }
   };
 
   return (
@@ -417,7 +415,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   className="w-full h-11 px-3 rounded-lg bg-white text-[#151d1a] font-body-sm text-sm focus:outline-none"
                 >
                   <option value="forage">Contribution Forage & Eau Potable</option>
-                  <option value="scolaire">Parrainage d'un orphelin / École</option>
+                  <option value="scolaire">Soutien scolaire et matériel éducatif</option>
                   <option value="vivres">Dons de vivres & céréales d'urgence</option>
                   <option value="benevole">Volontariat de compétences sur le terrain</option>
                 </select>
@@ -432,12 +430,14 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
 
                 <button
                   type="submit"
-                  className="h-11 rounded-lg bg-[#ffdcbd] text-[#2c1600] font-label-lg font-bold flex items-center justify-center gap-2 hover:bg-[#ffca98] transition-colors shadow-sm"
+                  disabled={formLoading}
+                  className="h-11 disabled:opacity-60 rounded-lg bg-[#ffdcbd] text-[#2c1600] font-label-lg font-bold flex items-center justify-center gap-2 hover:bg-[#ffca98] transition-colors shadow-sm"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>Transmettre mon engagement</span>
+                  <span>{formLoading ? 'Transmission…' : 'Transmettre mon engagement'}</span>
                 </button>
 
+                {formError && <span role="alert" className="text-sm text-red-200 text-center font-bold">{formError}</span>}
                 {formFeedback && (
                   <span className="font-label-sm text-sm text-[#ffdcbd] text-center pt-1 font-bold animate-in fade-in">
                     Barakallahou fik ! Votre demande a été reçue avec gratitude.

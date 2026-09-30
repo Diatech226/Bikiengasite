@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ArticleItem } from '../../types';
 import { PRESET_CATEGORIES, PRESET_IMAGES } from '../../data/blogStore';
-import { adminAuth } from '../../services/adminAuth';
+import { authApi } from '../../services/authApi';
 import { useToast } from '../../hooks/useToast';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminToast } from './components/AdminToast';
@@ -17,6 +17,7 @@ interface AdminScreenProps {
   onResetDefault: () => void;
   onPreviewArticle: (article: ArticleItem) => void;
   onExitAdmin: () => void;
+  onAuthenticated: () => void;
 }
 
 export const AdminScreen: React.FC<AdminScreenProps> = ({
@@ -29,11 +30,16 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   onResetDefault,
   onPreviewArticle,
   onExitAdmin,
+  onAuthenticated,
 }) => {
-  // Authentication / PIN code guard
-  const [isAuthenticated, setIsAuthenticated] = useState(adminAuth.hasSession);
-  const [pinInput, setPinInput] = useState('');
+  // Session API vérifiée côté serveur (aucun indicateur local ne suffit).
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
   const [pinError, setPinError] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  useEffect(() => { void authApi.restore().then((user) => setIsAuthenticated(Boolean(user))); }, []);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,29 +71,15 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   // Live Toast inside Admin
   const { message: adminToast, showToast: triggerToast } = useToast(3000);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Default PIN or quick bypass: accepts 1234 or empty/admin
-    if (adminAuth.authenticate(pinInput)) {
-      setIsAuthenticated(true);
-      setPinError(false);
-      triggerToast('Connexion réussie au Secrétariat de Nagréogo');
-    } else {
-      setPinError(true);
-    }
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); setLoginLoading(true); setPinError(false);
+    try { await authApi.login(emailInput, passwordInput); setIsAuthenticated(true); onAuthenticated(); triggerToast('Connexion réussie au Secrétariat de Nagréogo'); }
+    catch (error) { setPinError(true); setLoginError(error instanceof Error ? error.message : 'Connexion impossible'); }
+    finally { setLoginLoading(false); }
   };
 
-  const handleQuickLogin = () => {
-    setIsAuthenticated(true);
-    adminAuth.openDemoSession();
-    setPinError(false);
-    triggerToast('Accès direct autorisé au Secrétariat');
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    adminAuth.logout();
-    setPinInput('');
+  const handleLogout = async () => {
+    await authApi.logout(); setIsAuthenticated(false); setPasswordInput('');
   };
 
   // Format today's date in French
@@ -285,14 +277,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
 
   if (!isAuthenticated) {
     return (
-      <AdminLogin
-        pin={pinInput}
-        hasError={pinError}
-        onPinChange={(pin) => { setPinInput(pin); setPinError(false); }}
-        onSubmit={handleLogin}
-        onQuickLogin={handleQuickLogin}
-        onExit={onExitAdmin}
-      />
+      <AdminLogin email={emailInput} password={passwordInput} hasError={pinError} loading={loginLoading} errorMessage={loginError} onEmailChange={(value) => { setEmailInput(value); setPinError(false); }} onPasswordChange={(value) => { setPasswordInput(value); setPinError(false); }} onSubmit={handleLogin} onExit={onExitAdmin} />
     );
   }
 

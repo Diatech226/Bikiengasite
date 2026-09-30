@@ -1,0 +1,1 @@
+import{apiRequest}from'./api';export interface DashboardStats{totalArticles:number;publishedArticles:number;draftArticles:number;featuredArticles:number;totalArticleViews:number;donationsPending:number;donationsConfirmed:number;contactRequestsPending:number}export const dashboardApi={get:()=>apiRequest<DashboardStats>('/admin/dashboard')};
