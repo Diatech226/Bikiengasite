@@ -30,11 +30,16 @@ import { HealthModule } from './health/health.module';
         ADMIN_FIRST_NAME: Joi.string().optional(),
         ADMIN_LAST_NAME: Joi.string().optional(),
         VIEW_HASH_SECRET: Joi.string().min(32).required(),
+        ENABLE_SWAGGER: Joi.boolean().default(false),
       }),
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({ uri: config.getOrThrow<string>('MONGODB_URI') }),
+      useFactory: (config: ConfigService) => ({
+        uri: config.getOrThrow<string>('MONGODB_URI'),
+        autoIndex: true,
+        serverSelectionTimeoutMS: 10000,
+      }),
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     AuthModule,
