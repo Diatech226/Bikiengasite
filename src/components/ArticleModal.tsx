@@ -17,7 +17,6 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onToggleBookmark,
   onShare,
 }) => {
-  const [isNarrating, setIsNarrating] = useState(false);
   const [fontSizeLarge, setFontSizeLarge] = useState(false);
 
   useEffect(() => {
@@ -104,43 +103,8 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                 </div>
               </div>
 
-              {/* Audio Narration button */}
-              <button
-                onClick={() => setIsNarrating(!isNarrating)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  isNarrating
-                    ? 'bg-[#1b4332] text-white shadow-sm'
-                    : 'bg-[#e7f0ea] text-[#012d1d] hover:bg-[#dce5de]'
-                }`}
-              >
-                <span
-                  className="material-symbols-outlined text-[16px]"
-                  style={{ fontVariationSettings: isNarrating ? "'FILL' 1" : "'FILL' 0" }}
-                >
-                  {isNarrating ? 'volume_up' : 'headphones'}
-                </span>
-                <span>{isNarrating ? 'Écoute en cours...' : 'Écouter'}</span>
-              </button>
             </div>
           </div>
-
-          {/* Audio player simulator bar if narrating */}
-          {isNarrating && (
-            <div className="p-3 rounded-xl bg-[#e7f0ea] border border-[#c1ecd4] flex items-center justify-between gap-3 animate-in fade-in">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#7d562d] animate-ping" />
-                <span className="font-label-sm text-xs text-[#012d1d] font-semibold">
-                  Lecture vocale (Français & Mooré)
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-1 h-3 bg-[#7d562d] animate-bounce" />
-                <div className="w-1 h-5 bg-[#012d1d] animate-bounce delay-75" />
-                <div className="w-1 h-4 bg-[#7d562d] animate-bounce delay-150" />
-                <div className="w-1 h-6 bg-[#012d1d] animate-bounce delay-200" />
-              </div>
-            </div>
-          )}
 
           {/* Excerpt callout */}
           <div className="p-3.5 rounded-xl bg-[#edf6ef] border-l-4 border-[#7d562d]">

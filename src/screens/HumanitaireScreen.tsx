@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { contactApi, ContactType } from '../services/contactApi';
+import { useContent } from '../features/content/ContentContext';
 import { HUMANITAIRE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
@@ -20,6 +21,9 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
   onToggleBookmark,
   onShare,
 }) => {
+  const { get, media } = useContent();
+  const page = get<typeof HUMANITAIRE_DATA>('humanitaire.page');
+  page.chronicles = media('humanitaire');
   const [expandedArticles, setExpandedArticles] = useState<Record<string, boolean>>({});
   const [showQuickForm, setShowQuickForm] = useState(false);
   const [contactName, setContactName] = useState('');
@@ -77,16 +81,16 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
               volunteer_activism
             </span>
             <span className="font-label-sm text-label-sm uppercase tracking-wider font-bold">
-              {HUMANITAIRE_DATA.header.badge}
+              {page.header.badge}
             </span>
           </div>
 
           <h2 className="font-headline-lg-mobile md:text-3xl lg:text-4xl text-[#012d1d] tracking-tight font-bold">
-            {HUMANITAIRE_DATA.header.title}
+            {page.header.title}
           </h2>
 
           <p className="font-body-md text-body-md text-[#414844] leading-relaxed">
-            {HUMANITAIRE_DATA.header.description}
+            {page.header.description}
           </p>
         </div>
 
@@ -98,12 +102,12 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
               format_quote
             </span>
             <blockquote className="font-headline-md text-headline-md italic text-[#012d1d] leading-snug">
-              {HUMANITAIRE_DATA.header.quote}
+              {page.header.quote}
             </blockquote>
             <div className="flex items-center gap-2 mt-2">
               <div className="w-5 h-[1.5px] bg-[#7d562d]" />
               <span className="font-label-md text-label-md text-[#7d562d] font-bold">
-                {HUMANITAIRE_DATA.header.author}
+                {page.header.author}
               </span>
             </div>
           </div>
@@ -131,7 +135,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
-            {HUMANITAIRE_DATA.stats.map((st, i) => (
+            {page.stats.map((st, i) => (
               <div
                 key={i}
                 className="flex items-center sm:flex-col sm:items-center justify-between sm:justify-center p-4 rounded-xl bg-white text-center shadow-xs border border-[#c1c8c2]/30 transition-transform hover:-translate-y-0.5"
@@ -153,20 +157,20 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
           <div className="flex flex-col gap-1.5 pt-2">
             <div className="flex justify-between items-center text-[#414844]">
               <span className="font-label-md text-label-md font-bold text-[#012d1d]">
-                {HUMANITAIRE_DATA.wellProgress.title}
+                {page.wellProgress.title}
               </span>
               <span className="font-label-sm text-label-sm text-[#012d1d] font-bold">
-                {HUMANITAIRE_DATA.wellProgress.percent}%
+                {page.wellProgress.percent}%
               </span>
             </div>
             <div className="w-full h-2.5 rounded-full bg-[#ffdcbd]/70 overflow-hidden">
               <div
                 className="h-full bg-[#012d1d] rounded-full transition-all duration-700"
-                style={{ width: `${HUMANITAIRE_DATA.wellProgress.percent}%` }}
+                style={{ width: `${page.wellProgress.percent}%` }}
               />
             </div>
             <span className="font-label-sm text-label-sm text-[#414844] italic">
-              {HUMANITAIRE_DATA.wellProgress.note}
+              {page.wellProgress.note}
             </span>
           </div>
         </div>
@@ -188,7 +192,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
 
         {/* Stories Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {HUMANITAIRE_DATA.chronicles.map((story) => {
+          {page.chronicles.map((story) => {
             const isExpanded = !!expandedArticles[story.id];
             const isSaved = bookmarks.includes(story.id);
 

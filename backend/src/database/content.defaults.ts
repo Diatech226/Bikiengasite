@@ -1,4 +1,4 @@
-import { ArticleItem, MetricCard, VideoItem } from '../types';
+type MetricCard = Record<string, any>; type VideoItem = Record<string, any>; type ArticleItem = Record<string, any>;
 
 export const APP_ASSETS = {
   logo: 'https://lh3.googleusercontent.com/aida/AEtjO1VQGm1R3RM_VTIpjSWDcb0SM3u3AEDmGnte9U57zQR6THPlcTOl1inAt-xYKwshRww-PcbtbVgdlmn1EJnB2iO9fRkK4X_9JxlQ0E9cYuzqFgyu1CbkIqhXXBvsJ3KMdjDlRUt_Nli2QZAiktbwOA7eL6_g2IO9S1aFi61o6M_uaWSaRiboBiZFd-KJPoIiRmZbQPDgocpqTN_eSWT8whk14uS73ldh95ehq3gGuIRTG1kZbCPrSPEQobU',
