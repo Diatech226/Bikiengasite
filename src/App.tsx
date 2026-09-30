@@ -23,8 +23,13 @@ import { ArticleItem, TabType, VideoItem } from './types';
 import { useToast } from './hooks/useToast';
 import { useArticles } from './features/articles/hooks/useArticles';
 import { useBookmarks } from './features/bookmarks/hooks/useBookmarks';
+import { useContent } from './features/content/ContentContext';
 
 export default function App() {
+  const { get, refresh: refreshContent } = useContent();
+  const brand = get<any>('site.brand');
+  const footer = get<any>('site.footer');
+  const contact = get<any>('site.contact');
   const [currentTab, setCurrentTab] = useState<TabType>('accueil');
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);
@@ -131,6 +136,7 @@ export default function App() {
               onExitAdmin={() => {
                 setCurrentTab('accueil');
                 void refreshArticles();
+                void refreshContent();
               }}
             />
           )}
@@ -145,33 +151,33 @@ export default function App() {
             <div className="md:col-span-2 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <img
-                  src="https://lh3.googleusercontent.com/aida/AEtjO1VQGm1R3RM"
-                  alt="Sillon Sahélien Logo"
+                  src={brand.logoUrl}
+                  alt={brand.logoAlt}
                   className="w-12 h-12 rounded-xl object-contain bg-white/10 p-1"
                   referrerPolicy="no-referrer"
                 />
                 <div>
                   <h3 className="font-headline-sm text-lg font-bold text-white tracking-tight">
-                    Sillon Sahélien
+                    {brand.name}
                   </h3>
                   <p className="text-xs text-[#c1ecd4]">
-                    Nagréogo & Cheick Bikienga Seydou
+                    {brand.subtitle}
                   </p>
                 </div>
               </div>
               <p className="text-sm text-[#dce5de] leading-relaxed max-w-md">
-                Plateforme officielle de valorisation agro-écologique, pastorale et humanitaire du village de Nagréogo (Burkina Faso). Allier tradition sahélienne, science régénérative et solidarité fraternelle.
+                {footer.description}
               </p>
               <div className="flex items-center gap-2 text-xs text-[#ffdcbd]">
                 <span className="material-symbols-outlined text-[16px]">location_on</span>
-                <span>Nagréogo, Région du Plateau-Central, Burkina Faso</span>
+                <span>{contact.location}</span>
               </div>
             </div>
 
             {/* Col 2: Navigation rapide */}
             <div className="flex flex-col gap-3">
               <h4 className="font-label-md text-sm font-bold uppercase tracking-wider text-[#ffca98]">
-                Pôles d'Action
+                {footer.navigationTitle}
               </h4>
               <ul className="flex flex-col gap-2 text-sm text-[#dce5de]">
                 <li>
@@ -221,10 +227,10 @@ export default function App() {
             {/* Col 3: Engagement & Contact */}
             <div className="flex flex-col gap-3">
               <h4 className="font-label-md text-sm font-bold uppercase tracking-wider text-[#ffca98]">
-                Soutien & Fraternité
+                {footer.supportTitle}
               </h4>
               <p className="text-xs text-[#dce5de] leading-relaxed">
-                Soutenez les forages, les arbres et les semences paysannes locales par un don ou en contactant le secrétariat.
+                {footer.supportDescription}
               </p>
               <div className="flex flex-col gap-2 mt-1">
                 <button
@@ -232,7 +238,7 @@ export default function App() {
                   className="px-4 py-2 rounded-lg bg-[#ffca98] text-[#2c1600] text-xs font-bold hover:bg-[#ffdcbd] transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                 >
                   <span className="material-symbols-outlined text-[16px]">favorite</span>
-                  <span>Faire un don aux œuvres</span>
+                  <span>{footer.donationButton}</span>
                 </button>
                 <button
                   onClick={() => setCurrentTab('admin')}
@@ -246,16 +252,16 @@ export default function App() {
                   className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-[#dce5de] transition-colors flex items-center justify-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[16px]">person</span>
-                  <span>Biographie du Cheick</span>
+                  <span>{footer.profileButton}</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-[#dce5de]/70 gap-4">
-            <p>© 2024-2026 Sillon Sahélien • Cheick Bikienga Seydou — Nagréogo. Tous droits réservés.</p>
+            <p>{footer.copyright}</p>
             <div className="flex items-center gap-4">
-              <span>Agro-écologie • Pâturage régénératif • Fraternité</span>
+              <span>{footer.signature}</span>
             </div>
           </div>
         </div>

@@ -269,3 +269,12 @@
 .admin-error { padding:.75rem; border-radius:.75rem; background:#fef2f2; color:#b91c1c; font-size:.8rem; }
 .admin-state { padding:2rem; text-align:center; color:#57605a; }
 @media (min-width:640px){.admin-row{flex-direction:row;align-items:center}.admin-row>div:last-child{justify-content:flex-end}}
+
+/* Structured CMS controls */
+.admin-card { background: white; border: 1px solid #dce5de; border-radius: 1.25rem; padding: 1.25rem; box-shadow: 0 1px 3px rgb(1 45 29 / .08); }
+.admin-input { width: 100%; border: 1px solid #c1c8c2; border-radius: .75rem; padding: .65rem .8rem; background: #fff; color: #151d1a; }
+.admin-input:focus { outline: 2px solid #7d562d; outline-offset: 1px; }
+.admin-primary, .admin-secondary { border-radius: .75rem; padding: .65rem 1rem; font-size: .75rem; font-weight: 700; }
+.admin-primary { background: #012d1d; color: white; }
+.admin-primary:disabled { opacity: .55; }
+.admin-secondary { background: #e7f0ea; color: #012d1d; }

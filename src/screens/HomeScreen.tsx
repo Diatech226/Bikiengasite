@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { HOME_ARTICLES, HOME_METRICS, HOME_VIDEOS } from '../data/content';
+import { HOME_ARTICLES, HOME_CONTENT, HOME_METRICS } from '../data/content';
+import { useContent } from '../features/content/ContentContext';
 import { ArticleItem, VideoItem } from '../types';
 
 interface HomeScreenProps {
@@ -29,6 +30,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   articlesError,
   onRetryArticles,
 }) => {
+  const { get, media } = useContent();
+  const page = get<typeof HOME_CONTENT & { metrics: typeof HOME_METRICS }>('home.page');
+  const videos = media('home');
   const [activeFilter, setActiveFilter] = useState<'all' | 'video' | 'agriculture' | 'elevage' | 'humanitaire'>('all');
 
   const filterChips: { id: typeof activeFilter; label: string; icon: string }[] = [
@@ -39,7 +43,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     { id: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' },
   ];
 
-  const filteredVideos = HOME_VIDEOS.filter((v) => {
+  const filteredVideos = videos.filter((v) => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'video') return true;
     return v.category.includes(activeFilter);
@@ -52,13 +56,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-7 flex flex-col">
             <span className="font-label-sm text-xs uppercase tracking-wider text-[#7d562d] font-bold">
-              Terroir, Foi & Développement
+              {page.badge}
             </span>
             <h2 className="font-headline-lg-mobile md:text-3xl lg:text-4xl text-[#012d1d] font-bold mt-1 tracking-tight">
-              L'Œuvre & les Réalisations du Cheick
+              {page.title}
             </h2>
             <p className="font-body-md text-sm md:text-base text-[#414844] mt-2 leading-relaxed max-w-2xl">
-              Au service de la terre nourricière et des communautés unies de Nagréogo, au cœur du Plateau-Central burkinabè. Une vision intégrée d'autosuffisance alimentaire, d'eau potable et de fraternité solidaire.
+              {page.description}
             </p>
 
             <div className="hidden sm:flex items-center gap-3 mt-4">
@@ -66,13 +70,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 onClick={onOpenDonation}
                 className="px-5 py-2.5 rounded-full bg-[#012d1d] text-white font-label-md text-xs font-semibold hover:bg-[#1b4332] transition-colors shadow-xs"
               >
-                Participer aux chantiers
+                {page.primaryButton}
               </button>
               <button
                 onClick={() => onOpenArticle(HOME_ARTICLES[0])}
                 className="px-5 py-2.5 rounded-full bg-[#e2eae4] text-[#012d1d] font-label-md text-xs font-semibold hover:bg-[#dce5de] transition-colors"
               >
-                Lire les méditations
+                {page.secondaryButton}
               </button>
             </div>
           </div>
@@ -90,13 +94,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </span>
                 <div className="flex flex-col">
                   <p className="font-headline-md text-base md:text-lg italic text-[#012d1d] leading-snug">
-                    « Nourrir les âmes, cultiver la terre et tendre la main. »
+                    {page.quote}
                   </p>
                   <span className="font-label-sm text-xs text-[#7d562d] font-bold mt-2">
-                    Cheick Bikienga Seydou — Guide Spirituel & Bâtisseur
+                    {page.quoteAuthor}
                   </span>
                   <span className="text-[11px] text-[#414844] mt-0.5">
-                    Fondateur du domaine pilote agropastoral de Nagréogo
+                    {page.quoteCaption}
                   </span>
                 </div>
               </div>
@@ -113,17 +117,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               analytics
             </span>
             <h3 className="font-label-lg text-sm md:text-base text-[#012d1d] uppercase tracking-wide font-bold">
-              Impact Réel à Nagréogo
+              {page.impactTitle}
             </h3>
           </div>
           <span className="font-label-sm text-xs text-[#7d562d] font-bold px-2.5 py-0.5 bg-[#ffdcbd]/50 rounded-full">
-            Bilan Consolidé 2024
+            {page.impactPeriod}
           </span>
         </div>
 
         {/* Mobile scroll, sm/md/lg 4-col grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
-          {HOME_METRICS.map((metric, idx) => (
+          {page.metrics.map((metric, idx) => (
             <div
               key={idx}
               className={`${metric.bgColor} rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-xs border border-black/5 hover:scale-102 transition-transform`}

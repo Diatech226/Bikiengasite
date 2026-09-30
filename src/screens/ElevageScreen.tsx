@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useContent } from '../features/content/ContentContext';
 import { ELEVAGE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
@@ -17,6 +18,9 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
   bookmarks,
   onToggleBookmark,
 }) => {
+  const { get, media } = useContent();
+  const page = get<typeof ELEVAGE_DATA>('elevage.page');
+  page.videos = media('elevage');
   const [activeFilter, setActiveFilter] = useState('all');
 
   return (
@@ -27,16 +31,16 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
           <div className="flex items-center gap-space-xs text-[#7d562d]">
             <span className="material-symbols-outlined text-[18px]">cruelty_free</span>
             <span className="font-label-sm text-label-sm uppercase tracking-widest font-bold">
-              {ELEVAGE_DATA.header.badge}
+              {page.header.badge}
             </span>
           </div>
 
           <h2 className="font-headline-lg-mobile md:text-3xl lg:text-4xl text-[#012d1d] tracking-tight font-bold">
-            {ELEVAGE_DATA.header.title}
+            {page.header.title}
           </h2>
 
           <p className="font-body-md text-body-md text-[#414844] leading-relaxed">
-            {ELEVAGE_DATA.header.description}
+            {page.header.description}
           </p>
         </div>
 
@@ -48,10 +52,10 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
               format_quote
             </span>
             <p className="font-headline-md text-[1rem] leading-snug italic text-[#012d1d]">
-              {ELEVAGE_DATA.header.quote}
+              {page.header.quote}
             </p>
             <span className="font-label-sm text-label-sm text-[#7d562d] uppercase font-semibold tracking-wider mt-1">
-              {ELEVAGE_DATA.header.author}
+              {page.header.author}
             </span>
           </div>
         </div>
@@ -59,7 +63,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
       {/* Filtres Rapides Pastoraux */}
       <div className="w-full px-margin pb-space-md flex items-center gap-space-xs overflow-x-auto no-scrollbar md:flex-wrap">
-        {ELEVAGE_DATA.filters.map((flt) => {
+        {page.filters.map((flt) => {
           const isActive = activeFilter === flt.id;
           return (
             <button
@@ -89,7 +93,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
-          {ELEVAGE_DATA.stats.map((st, i) => (
+          {page.stats.map((st, i) => (
             <div
               key={i}
               className="p-space-md md:p-5 bg-white rounded-xl shadow-xs flex items-center sm:flex-col sm:items-start justify-between sm:justify-start gap-3 border border-[#c1c8c2]/40 transition-transform hover:-translate-y-0.5"
@@ -130,7 +134,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* POST VIDÉO 1 : Embouche bovine intensive */}
           {(() => {
-            const v = ELEVAGE_DATA.videos[0];
+            const v = page.videos[0];
             const isSaved = bookmarks.includes(v.id);
             return (
               <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col border border-[#c1c8c2]/40 hover:shadow-md transition-shadow">
@@ -258,7 +262,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
           {/* POST VIDÉO 2 : Campagne vaccinale solidaire */}
           {(() => {
-            const v = ELEVAGE_DATA.videos[1];
+            const v = page.videos[1];
             const isSaved = bookmarks.includes(v.id);
             return (
               <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col border border-[#c1c8c2]/40 hover:shadow-md transition-shadow">
@@ -385,7 +389,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
           {/* POST VIDÉO 3 : La mini-laiterie villageoise */}
           {(() => {
-            const v = ELEVAGE_DATA.videos[2];
+            const v = page.videos[2];
             const isSaved = bookmarks.includes(v.id);
             return (
               <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col border border-[#c1c8c2]/40 hover:shadow-md transition-shadow">
@@ -527,7 +531,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
-          {ELEVAGE_DATA.rules.map((rule, idx) => (
+          {page.rules.map((rule, idx) => (
             <div
               key={idx}
               className="p-space-md bg-white rounded-xl shadow-xs flex items-start gap-space-md border border-[#c1c8c2]/40 hover:border-[#7d562d]/50 transition-colors"

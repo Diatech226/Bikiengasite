@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useContent } from '../features/content/ContentContext';
 import { AGRICULTURE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
@@ -17,9 +18,12 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
   bookmarks,
   onToggleBookmark,
 }) => {
+  const { get, media } = useContent();
+  const page = get<typeof AGRICULTURE_DATA>('agriculture.page');
+  page.videos = media('agriculture');
   const [activeFilter, setActiveFilter] = useState('all');
 
-  const filteredVideos = AGRICULTURE_DATA.videos.filter((v) => {
+  const filteredVideos = page.videos.filter((v) => {
     if (activeFilter === 'all') return true;
     return v.category === activeFilter;
   });
@@ -33,22 +37,22 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
             <div className="inline-flex items-center gap-1.5 self-start px-3 py-1 rounded-full bg-[#ffca98] text-[#7a532a]">
               <span className="material-symbols-outlined text-[16px]">eco</span>
               <span className="font-label-sm text-xs tracking-wider uppercase font-bold">
-                {AGRICULTURE_DATA.header.badge}
+                {page.header.badge}
               </span>
             </div>
 
             <h2 className="font-headline-lg-mobile md:text-3xl lg:text-4xl text-[#012d1d] font-bold tracking-tight">
-              {AGRICULTURE_DATA.header.title}
+              {page.header.title}
             </h2>
 
             <p className="font-body-md text-sm md:text-base text-[#414844] leading-relaxed max-w-2xl">
-              {AGRICULTURE_DATA.header.description}
+              {page.header.description}
             </p>
           </div>
 
           {/* Mini statistiques d'impact - 3 cols on all sizes */}
           <div className="lg:col-span-5 grid grid-cols-3 gap-2.5 sm:gap-4">
-            {AGRICULTURE_DATA.stats.map((st, i) => (
+            {page.stats.map((st, i) => (
               <div
                 key={i}
                 className="flex flex-col p-3 sm:p-4 rounded-2xl bg-[#edf6ef] border border-[#c1c8c2]/50 shadow-xs hover:scale-102 transition-transform"
@@ -70,7 +74,7 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
 
       {/* Barre de filtres fluides */}
       <section className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-        {AGRICULTURE_DATA.filters.map((flt) => {
+        {page.filters.map((flt) => {
           const isActive = activeFilter === flt.id;
           return (
             <button
@@ -279,10 +283,10 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
             format_quote
           </span>
           <p className="font-headline-md italic text-base md:text-lg text-[#012d1d] leading-relaxed">
-            {AGRICULTURE_DATA.quote}
+            {page.quote}
           </p>
           <span className="font-label-sm text-xs uppercase tracking-wider text-[#7d562d] mt-3 font-bold">
-            {AGRICULTURE_DATA.author}
+            {page.author}
           </span>
           <span className="text-[11px] text-[#414844] mt-0.5">
             Transmission communautaire et écologie intégrale
