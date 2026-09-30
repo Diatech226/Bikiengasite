@@ -9,6 +9,7 @@ interface DonationModalProps {
 export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
+  const [email, setEmail] = useState('');
   const [category, setCategory] = useState(defaultCategory || 'forage');
   const [amount, setAmount] = useState('50 000 FCFA');
   const [message, setMessage] = useState('');
@@ -26,8 +27,8 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
-    const numericAmount = Number(amount.replace(/[^0-9]/g, ''));
-    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), type: category, amount: numericAmount || undefined, message: message.trim() || undefined }); setSubmitted(true); }
+    const numericAmount = category === 'materiel' ? undefined : Number(amount.replace(/[^0-9]/g, '')) || undefined;
+    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: numericAmount, message: message.trim() || undefined }); setSubmitted(true); }
     catch (err) { setError(err instanceof Error ? err.message : 'La demande n’a pas pu être transmise.'); }
     finally { setLoading(false); }
   };
@@ -121,6 +122,11 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 </div>
 
                 <div>
+                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">E-mail (facultatif)</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@exemple.com" className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
+                </div>
+
+                {category !== 'materiel' && <div>
                   <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                     Montant indicatif ou proposition de don
                   </label>
@@ -140,7 +146,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                       </button>
                     ))}
                   </div>
-                </div>
+                </div>}
 
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
@@ -180,7 +186,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   Qu'Allah bénisse votre générosité, {name} !
                 </h3>
                 <p className="font-body-sm text-xs text-[#414844] mt-1 max-w-sm mx-auto">
-                  Votre engagement pour <strong>{categories.find((c) => c.id === category)?.label}</strong> ({amount}) a bien été transmis. Le secrétariat humanitaire de Nagréogo prendra attache avec vous sur {contact}.
+                  Votre intention de don pour <strong>{categories.find((c) => c.id === category)?.label}</strong>{category !== 'materiel' ? ` (${amount})` : ''} a bien été transmise. Il ne s'agit pas d'une confirmation de paiement. Le secrétariat humanitaire de Nagréogo prendra attache avec vous sur {contact}.
                 </p>
               </div>
 

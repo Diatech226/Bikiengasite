@@ -9,7 +9,6 @@ import { BottomNav } from './components/BottomNav';
 import { VideoPlayerModal } from './components/VideoPlayerModal';
 import { ArticleModal } from './components/ArticleModal';
 import { AgriculturalGuideModal } from './components/AgriculturalGuideModal';
-import { SponsorModal } from './components/SponsorModal';
 import { DonationModal } from './components/DonationModal';
 import { SearchModal } from './components/SearchModal';
 import { ProfileModal } from './components/ProfileModal';
@@ -30,7 +29,6 @@ export default function App() {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const [isSponsorOpen, setIsSponsorOpen] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -116,8 +114,7 @@ export default function App() {
             <ElevageScreen
               onOpenVideo={(v) => setActiveVideo(v)}
               onOpenArticle={(a) => setActiveArticle(a)}
-              onOpenSponsor={() => setIsSponsorOpen(true)}
-              onOpenContact={() => setIsDonationOpen(true)}
+              onOpenDonation={() => setIsDonationOpen(true)}
               bookmarks={bookmarks}
               onToggleBookmark={handleToggleBookmark}
             />
@@ -238,7 +235,7 @@ export default function App() {
                 Soutien & Fraternité
               </h4>
               <p className="text-xs text-[#dce5de] leading-relaxed">
-                Rejoignez les programmes de parrainage de forages, d'arbres ou de semences paysannes locales.
+                Soutenez les forages, les arbres et les semences paysannes locales par un don ou en contactant le secrétariat.
               </p>
               <div className="flex flex-col gap-2 mt-1">
                 <button
@@ -327,11 +324,6 @@ export default function App() {
         {/* Practical Agricultural Guide Modal */}
         {isGuideOpen && (
           <AgriculturalGuideModal onClose={() => setIsGuideOpen(false)} />
-        )}
-
-        {/* Animal Sponsorship Modal */}
-        {isSponsorOpen && (
-          <SponsorModal onClose={() => setIsSponsorOpen(false)} />
         )}
 
         {/* Donation / Support Modal */}

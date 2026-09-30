@@ -5,8 +5,7 @@ import { ArticleItem, VideoItem } from '../types';
 interface ElevageScreenProps {
   onOpenVideo: (video: VideoItem) => void;
   onOpenArticle: (article: ArticleItem) => void;
-  onOpenSponsor: () => void;
-  onOpenContact: () => void;
+  onOpenDonation: () => void;
   bookmarks: string[];
   onToggleBookmark: (id: string, title: string) => void;
 }
@@ -14,8 +13,7 @@ interface ElevageScreenProps {
 export const ElevageScreen: React.FC<ElevageScreenProps> = ({
   onOpenVideo,
   onOpenArticle,
-  onOpenSponsor,
-  onOpenContact,
+  onOpenDonation,
   bookmarks,
   onToggleBookmark,
 }) => {
@@ -572,26 +570,26 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
                 Participez au renforcement du cheptel sahélien
               </h3>
               <p className="font-body-sm text-sm text-[#c1ecd4]">
-                Soutenez les campagnes vétérinaires ou parrainez une vache laitière confiée à une famille vulnérable de Nagréogo.
+                Soutenez les campagnes vétérinaires et l'équipement des familles d'éleveurs vulnérables de Nagréogo.
               </p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
             <button
-              onClick={onOpenSponsor}
+              onClick={onOpenDonation}
               className="py-3 px-6 rounded-xl bg-[#7d562d] text-white font-label-lg shadow-sm hover:bg-[#623f18] active:scale-95 transition-all flex items-center justify-center gap-2 font-bold whitespace-nowrap"
             >
               <span className="material-symbols-outlined text-[20px]">favorite</span>
-              <span>Parrainer un animal</span>
+              <span>Faire un don</span>
             </button>
 
             <button
-              onClick={onOpenContact}
+              onClick={onOpenDonation}
               className="py-3 px-6 rounded-xl bg-[#1b4332] text-white font-label-lg active:scale-95 transition-all flex items-center justify-center gap-2 font-semibold hover:bg-opacity-90 whitespace-nowrap"
             >
               <span className="material-symbols-outlined text-[20px]">contact_support</span>
-              <span>Poser une question</span>
+              <span>Contacter le secrétariat</span>
             </button>
           </div>
         </div>
@@ -599,4 +597,3 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
     </div>
   );
 };
-

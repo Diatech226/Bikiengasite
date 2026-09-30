@@ -1,5 +1,4 @@
 export const STORAGE_KEYS = {
-  articles: 'nagreogo_blog_articles',
   bookmarks: 'nagreogo_bookmarks',
 } as const;
 

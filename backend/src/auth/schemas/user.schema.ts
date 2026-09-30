@@ -6,7 +6,7 @@ export enum UserRole { ADMIN = 'ADMIN' }
 
 @Schema({ collection: 'users', timestamps: true, ...jsonSchemaOptions })
 export class User {
-  @Prop({ required: true, unique: true, lowercase: true, trim: true, index: true }) email: string;
+  @Prop({ required: true, unique: true, lowercase: true, trim: true }) email: string;
   @Prop({ required: true, select: false }) passwordHash: string;
   @Prop() firstName?: string;
   @Prop() lastName?: string;
