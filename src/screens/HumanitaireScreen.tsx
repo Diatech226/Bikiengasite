@@ -345,7 +345,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                     Agir aux côtés du Cheick
                   </h3>
                   <span className="font-label-sm text-label-sm text-[#c1ecd4]">
-                    Relayez, parrainez ou participez aux œuvres de Nagréogo
+                    Relayez ou participez aux œuvres de Nagréogo
                   </span>
                 </div>
               </div>
@@ -451,4 +451,3 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
     </div>
   );
 };
-

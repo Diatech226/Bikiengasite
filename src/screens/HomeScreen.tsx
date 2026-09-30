@@ -11,6 +11,9 @@ interface HomeScreenProps {
   bookmarks: string[];
   onToggleBookmark: (id: string, title: string) => void;
   onShare: (title: string, desc: string) => void;
+  articlesLoading: boolean;
+  articlesError: string | null;
+  onRetryArticles: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -22,6 +25,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   bookmarks,
   onToggleBookmark,
   onShare,
+  articlesLoading,
+  articlesError,
+  onRetryArticles,
 }) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'video' | 'agriculture' | 'elevage' | 'humanitaire'>('all');
 
@@ -341,7 +347,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* Responsive Grid for Articles: 1 col on mobile, 3 col on md/lg */}
-        {(() => {
+        {articlesLoading ? (
+          <div className="bg-white p-8 rounded-2xl border border-[#c1c8c2] text-center" role="status">Chargement des publications…</div>
+        ) : articlesError ? (
+          <div className="bg-white p-8 rounded-2xl border border-[#c1c8c2] text-center flex flex-col items-center gap-3" role="alert"><p>Les publications sont momentanément indisponibles.</p><button className="px-4 py-2 rounded-full bg-[#012d1d] text-white text-xs font-bold" onClick={onRetryArticles}>Réessayer</button></div>
+        ) : (() => {
           const published = articles.filter((a) => (a.status || 'published') === 'published');
           if (published.length === 0) {
             return (
@@ -452,4 +462,3 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     </div>
   );
 };
-

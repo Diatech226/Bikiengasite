@@ -11,6 +11,11 @@ describe('ArticlesService', () => {
     await new ArticlesService(articles, {}, {}, {} as any).list({ page: 1, limit: 12 });
     expect(articles.find).toHaveBeenCalledWith(expect.objectContaining({ status: 'PUBLISHED' }));
   });
+  it('ne filtre pas les brouillons pour la liste administrateur', async () => {
+    const articles: any = { find: jest.fn().mockReturnValue(chain([])), countDocuments: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(0) }) };
+    await new ArticlesService(articles, {}, {}, {} as any).list({ page: 1, limit: 12 }, true);
+    expect(articles.find).toHaveBeenCalledWith({});
+  });
   it('cache un brouillon demandé publiquement', async () => {
     const articles: any = { findOne: jest.fn().mockReturnValue(chain(null)) };
     await expect(new ArticlesService(articles, {}, {}, {} as any).bySlug('draft')).rejects.toBeInstanceOf(NotFoundException);

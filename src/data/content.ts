@@ -423,7 +423,7 @@ export const HUMANITAIRE_DATA = {
       description: "Aucun enfant de Nagréogo ne doit être privé d'instruction par manque de cahiers ou d'uniforme. Un engagement renouvelé pour faire de l'école le socle du développement sahélien.",
       statusText: '200 élèves scolarisés',
       expandedNarrative: "En plus des kits complets (sacs, fournitures, stylos, livres de lecture), les frais de scolarité et de cantine sont intégralement pris en charge pour l'année scolaire entière, offrant sérénité aux mères veuves et tuteurs.",
-      impactBox: "100% de taux de scolarisation maintenu parmi les orphelins parrainés, avec un taux de réussite de 94% à l'examen du CEP.",
+      impactBox: "100% de taux de scolarisation maintenu parmi les orphelins accompagnés, avec un taux de réussite de 94% à l'examen du CEP.",
     },
   ],
 };
