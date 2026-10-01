@@ -8,6 +8,7 @@ import { CategorySchema } from '../categories/schemas/category.schema';
 import { MediaItemSchema } from '../content/schemas/media-item.schema';
 import { SiteContentSchema } from '../content/schemas/site-content.schema';
 import { AGRICULTURE_DATA, APP_ASSETS, ELEVAGE_DATA, HOME_CONTENT, HOME_METRICS, HOME_VIDEOS, HUMANITAIRE_DATA, SITE_CONTENT } from './content.defaults';
+import { insertIfMissing } from './seed.utils';
 
 const categories = ['Méditation & Spiritualité', 'Sécurité Alimentaire', 'Agro-écologie & Zaï', 'Élevage Pastoral', 'Œuvres & Solidarité', 'Jeunesse & Savoir'];
 const articles = [
@@ -33,7 +34,7 @@ async function seed() {
   const categoryIds = new Map<string, mongoose.Types.ObjectId>();
   for (const name of categories) {
     const slug = slugify(name, { lower: true, strict: true, locale: 'fr' });
-    const category = await Category.findOneAndUpdate({ slug }, { $set: { name, slug } }, { upsert: true, new: true, runValidators: true });
+    const category = await Category.findOneAndUpdate({ slug }, { $setOnInsert: { name, slug } }, { upsert: true, new: true, runValidators: true });
     categoryIds.set(name, category._id);
   }
   for (const article of articles) {
@@ -42,11 +43,11 @@ async function seed() {
   }
   const blocks = [
     { key: 'site.brand', section: 'site', data: SITE_CONTENT.brand }, { key: 'site.navigation', section: 'site', data: SITE_CONTENT.navigation }, { key: 'site.footer', section: 'site', data: SITE_CONTENT.footer }, { key: 'site.contact', section: 'site', data: SITE_CONTENT.contact }, { key: 'site.profile', section: 'site', data: SITE_CONTENT.profile }, { key: 'site.guide', section: 'site', data: SITE_CONTENT.guide }, { key: 'site.donation', section: 'site', data: SITE_CONTENT.donation }, { key: 'site.search', section: 'site', data: SITE_CONTENT.search },
-    { key: 'home.page', section: 'home', data: { ...HOME_CONTENT, metrics: HOME_METRICS } }, { key: 'agriculture.page', section: 'agriculture', data: Object.fromEntries(Object.entries(AGRICULTURE_DATA).filter(([key]) => key !== 'videos')) }, { key: 'elevage.page', section: 'elevage', data: Object.fromEntries(Object.entries(ELEVAGE_DATA).filter(([key]) => key !== 'videos')) }, { key: 'humanitaire.page', section: 'humanitaire', data: Object.fromEntries(Object.entries(HUMANITAIRE_DATA).filter(([key]) => key !== 'videos')) },
+    { key: 'home.page', section: 'home', data: { ...HOME_CONTENT, metrics: HOME_METRICS } }, { key: 'agriculture.page', section: 'agriculture', data: Object.fromEntries(Object.entries(AGRICULTURE_DATA).filter(([key]) => key !== 'videos')) }, { key: 'elevage.page', section: 'elevage', data: Object.fromEntries(Object.entries(ELEVAGE_DATA).filter(([key]) => key !== 'videos')) }, { key: 'humanitaire.page', section: 'humanitaire', data: Object.fromEntries(Object.entries(HUMANITAIRE_DATA).filter(([key]) => key !== 'chronicles')) },
   ];
-  for (const block of blocks) await SiteContent.updateOne({ key: block.key }, { $setOnInsert: block }, { upsert: true, runValidators: true });
+  for (const block of blocks) await insertIfMissing((filter, update, options) => SiteContent.updateOne(filter, update, options), { key: block.key }, block);
   const mediaGroups: [string, any[]][] = [['home', HOME_VIDEOS], ['agriculture', AGRICULTURE_DATA.videos], ['elevage', ELEVAGE_DATA.videos], ['humanitaire', HUMANITAIRE_DATA.chronicles]];
-  for (const [section, items] of mediaGroups) for (const [order, item] of items.entries()) await MediaItem.updateOne({ slug: item.id }, { $setOnInsert: { slug: item.id, section, type: 'reportage', title: item.title, description: ('description' in item ? item.description : item.summary) || item.title, body: 'fullText' in item ? item.fullText : undefined, imageUrl: item.image, imageAlt: item.alt, badge: ('badge' in item ? item.badge : 'tagLabel' in item ? item.tagLabel : section), dateLabel: item.date, metric: 'statMetric' in item ? item.statMetric : 'stats' in item ? item.stats : undefined, buttonLabel: 'btnText' in item ? item.btnText : 'actionText' in item ? item.actionText : 'Lire le récit', metadata: { category: item.category || 'all', duration: item.duration || '', tagIcon: 'tagIcon' in item ? item.tagIcon : '', badgeIcon: 'badgeIcon' in item ? item.badgeIcon : '', statsIcon: 'statIcon' in item ? item.statIcon : 'statsIcon' in item ? item.statsIcon : '' }, order, isActive: true } }, { upsert: true, runValidators: true });
+  for (const [section, items] of mediaGroups) for (const [order, item] of items.entries()) await insertIfMissing((filter, update, options) => MediaItem.updateOne(filter, update, options), { slug: item.id }, { slug: item.id, section, type: 'reportage', title: item.title, description: ('description' in item ? item.description : item.summary) || item.title, body: 'fullText' in item ? item.fullText : undefined, imageUrl: item.image, imageAlt: item.alt, badge: ('badge' in item ? item.badge : 'tagLabel' in item ? item.tagLabel : section), dateLabel: item.date, metric: 'statMetric' in item ? item.statMetric : 'stats' in item ? item.stats : undefined, buttonLabel: 'btnText' in item ? item.btnText : 'actionText' in item ? item.actionText : 'Lire le récit', metadata: { category: item.category || 'all', duration: item.duration || '', tagIcon: 'tagIcon' in item ? item.tagIcon : '', badgeIcon: 'badgeIcon' in item ? item.badgeIcon : '', statsIcon: 'statIcon' in item ? item.statIcon : 'statsIcon' in item ? item.statsIcon : '', location: item.location || '', statusText: item.statusText || '', expandedNarrative: item.expandedNarrative || '', impactBox: item.impactBox || '' }, order, isActive: true });
   console.log(`Seed terminé : administrateur vérifié, ${categories.length} catégories, ${articles.length} articles, ${blocks.length} blocs éditoriaux.`);
 }
 

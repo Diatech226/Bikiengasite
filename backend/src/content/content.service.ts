@@ -5,12 +5,17 @@ import { MediaItemDto } from './dto/content.dto';
 import { CONTENT_KEYS, ContentKey, SiteContent } from './schemas/site-content.schema';
 import { MediaItem } from './schemas/media-item.schema';
 
-function validateData(value: unknown, depth = 0): void {
+export function validateData(value: unknown, depth = 0, field = 'data'): void {
   if (depth > 8) throw new BadRequestException('Structure de contenu trop profonde');
-  if (typeof value === 'string' && value.length > 12000) throw new BadRequestException('Un texte dépasse 12 000 caractères');
-  if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) return;
-  if (Array.isArray(value)) { if (value.length > 100) throw new BadRequestException('Une liste dépasse 100 éléments'); value.forEach((entry) => validateData(entry, depth + 1)); return; }
-  if (typeof value === 'object') { Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => { if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(key)) throw new BadRequestException(`Champ invalide : ${key}`); validateData(entry, depth + 1); }); return; }
+  if (typeof value === 'string') {
+    if (value.length > 12000) throw new BadRequestException('Un texte dépasse 12 000 caractères');
+    if (/url$/i.test(field) && value && !/^https:\/\//i.test(value)) throw new BadRequestException(`Le champ ${field} doit être une URL HTTPS`);
+    return;
+  }
+  if (typeof value === 'number') { if (!Number.isFinite(value)) throw new BadRequestException(`Le champ ${field} doit être un nombre fini`); return; }
+  if (value === null || typeof value === 'boolean') return;
+  if (Array.isArray(value)) { if (value.length > 100) throw new BadRequestException('Une liste dépasse 100 éléments'); value.forEach((entry) => validateData(entry, depth + 1, field)); return; }
+  if (typeof value === 'object') { Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => { if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(key)) throw new BadRequestException(`Champ invalide : ${key}`); validateData(entry, depth + 1, key); }); return; }
   throw new BadRequestException('Type de contenu non autorisé');
 }
 
@@ -26,7 +31,7 @@ const requiredFields: Record<ContentKey, Record<string, 'string'|'array'|'object
   'agriculture.page': { header: 'object', stats: 'array', filters: 'array' }, 'elevage.page': { header: 'object', stats: 'array' },
   'humanitaire.page': { header: 'object', stats: 'array', contactOptions: 'array' },
 };
-function validateForKey(key: ContentKey, data: Record<string, unknown>) {
+export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   for (const [field, expected] of Object.entries(requiredFields[key])) {
     const value = data[field];
     const valid = expected === 'array' ? Array.isArray(value) : expected === 'object' ? !!value && typeof value === 'object' && !Array.isArray(value) : typeof value === expected;
@@ -36,11 +41,15 @@ function validateForKey(key: ContentKey, data: Record<string, unknown>) {
     'site.navigation': { items: ['accueil', 'agriculture', 'elevage', 'humanitaire'] },
     'site.donation': { categories: ['forage', 'cereales', 'orphelins', 'arbres', 'materiel'] },
     'humanitaire.page': { contactOptions: ['forage', 'scolaire', 'vivres', 'benevole'] },
+    'home.page': { filters: ['all', 'video', 'agriculture', 'elevage', 'humanitaire'] },
+    'agriculture.page': { filters: ['all', 'techniques', 'maraichage', 'arbres'] },
+    'elevage.page': { filters: ['all', 'bovins', 'ovins', 'laiterie'] },
   };
   for (const [field, allowed] of Object.entries(allowedValues[key] || {})) {
     const values = data[field] as Array<Record<string, unknown>>;
-    const identifier = key === 'site.navigation' ? 'id' : 'value';
-    if (!values.every((entry) => allowed.includes(String(entry[identifier])) && typeof entry.label === 'string')) {
+    const identifier = key === 'site.navigation' || field === 'filters' ? 'id' : 'value';
+    const identifiers = values.map((entry) => String(entry[identifier]));
+    if (identifiers.length !== allowed.length || new Set(identifiers).size !== allowed.length || !allowed.every((id) => identifiers.includes(id)) || !values.every((entry) => typeof entry.label === 'string')) {
       throw new BadRequestException(`Les identifiants techniques de ${key}.${field} ne peuvent pas être modifiés`);
     }
   }
@@ -67,7 +76,7 @@ export class ContentService {
     if (!result) throw new NotFoundException('Bloc introuvable. Exécutez le seed initial.');
     return clean(result);
   }
-  createMedia(dto: MediaItemDto, userId?: string) { return this.media.create({ ...dto, updatedBy: userId }); }
+  createMedia(dto: MediaItemDto, userId?: string) { return this.media.create({ ...dto, slug: dto.slug.trim().toLowerCase(), updatedBy: userId }); }
   async updateMedia(id: string, dto: MediaItemDto, userId?: string) { const item = await this.media.findByIdAndUpdate(id, { $set: { ...dto, updatedBy: userId } }, { new: true, runValidators: true }); if (!item) throw new NotFoundException('Média introuvable'); return item; }
   async deleteMedia(id: string) { const item = await this.media.findByIdAndDelete(id); if (!item) throw new NotFoundException('Média introuvable'); return { success: true }; }
 }

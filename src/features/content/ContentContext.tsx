@@ -39,6 +39,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     setStatus((current) => current === 'loaded' ? current : 'loading');
     try {
       const payload = await contentApi.public();
+      const required = ['site.brand', 'site.navigation', 'site.footer', 'site.contact', 'site.profile', 'site.guide', 'site.donation', 'site.search', 'home.page', 'agriculture.page', 'elevage.page', 'humanitaire.page'];
+      if (!required.every((key) => payload.blocks.some((block) => block.key === key))) throw new Error('Le contenu initial est incomplet');
       setBlocks(Object.fromEntries(payload.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>);
       setItems(payload.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
       setStatus('loaded');
