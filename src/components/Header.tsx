@@ -1,5 +1,6 @@
 import React from 'react';
-import { APP_ASSETS } from '../data/content';
+import { useContent } from '../features/content/ContentContext';
+import { SiteBrandContent, SiteNavigationContent, SiteProfileContent } from '../services/contentApi';
 import { TabType } from '../types';
 
 interface HeaderProps {
@@ -21,20 +22,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenBookmarks,
   onOpenDonation,
 }) => {
-  const titles: Record<TabType, string> = {
-    accueil: 'Accueil',
-    agriculture: 'Agriculture',
-    elevage: 'Élevage',
-    humanitaire: 'Humanitaire',
-    admin: 'Administration',
-  };
-
-  const navItems: { tab: TabType; label: string; icon: string }[] = [
-    { tab: 'accueil', label: 'Accueil', icon: 'home' },
-    { tab: 'agriculture', label: 'Agriculture', icon: 'eco' },
-    { tab: 'elevage', label: 'Élevage', icon: 'cruelty_free' },
-    { tab: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' },
-  ];
+  const { get } = useContent();
+  const brand = get<SiteBrandContent>('site.brand'); const navigation = get<SiteNavigationContent>('site.navigation'); const profile = get<SiteProfileContent>('site.profile');
+  const icons = { accueil: 'home', agriculture: 'eco', elevage: 'cruelty_free', humanitaire: 'volunteer_activism' } as const;
+  const navItems = (navigation.items || []).map((item) => ({ tab: item.id, label: item.label, icon: icons[item.id] }));
+  const currentTitle = navItems.find((item) => item.tab === currentTab)?.label || '';
 
   return (
     <header className="fixed top-0 w-full z-40 pt-safe bg-[#f3fbf5]/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.05)] border-b border-[#e2eae4]">
@@ -45,21 +37,21 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-3 min-w-0 cursor-pointer group"
         >
           <img
-            alt="Logo Nagreogo Cheick Bikienga"
+            alt={brand.logoAlt || ''}
             className="h-9 md:h-11 w-auto object-contain flex-shrink-0 transition-transform group-hover:scale-105"
-            src={APP_ASSETS.logo}
+            src={brand.logoUrl}
             referrerPolicy="no-referrer"
           />
           <div className="flex flex-col min-w-0">
             <span className="font-label-sm text-[0.6875rem] md:text-xs font-bold tracking-wider uppercase text-[#7d562d] truncate">
-              Nagréogo • Cheick Bikienga
+              {brand.subtitle}
             </span>
             <div className="flex items-center gap-2">
               <span className="font-headline-sm text-[1.125rem] md:text-xl text-[#012d1d] font-bold truncate leading-tight">
-                Sillon Sahélien
+                {brand.name}
               </span>
               <span className="hidden sm:inline-block md:hidden text-xs px-2 py-0.5 rounded-full bg-[#e2eae4] text-[#012d1d] font-semibold">
-                {titles[currentTab]}
+                {currentTitle}
               </span>
             </div>
           </div>
@@ -98,12 +90,12 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Quick Search Button */}
           <button
             onClick={onOpenSearch}
-            aria-label="Rechercher"
+            aria-label={navigation.searchLabel}
             className="w-10 h-10 md:w-auto md:px-3.5 md:py-2 flex items-center justify-center gap-2 rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors border border-transparent md:border-[#c1c8c2]/50"
           >
             <span className="material-symbols-outlined text-[20px]">search</span>
             <span className="hidden lg:inline text-xs font-medium text-[#717973]">
-              Rechercher...
+              {navigation.searchLabel}
             </span>
           </button>
 
@@ -130,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffca98] text-[#7a532a] font-label-md text-xs lg:text-sm font-bold shadow-xs hover:bg-[#f0bd8b] transition-all active:scale-95"
           >
             <span className="material-symbols-outlined text-[17px]">volunteer_activism</span>
-            <span>Soutenir l'action</span>
+            <span>{navigation.supportLabel}</span>
           </button>
 
           {/* Admin / Editorial Studio Button */}
@@ -156,14 +148,14 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Profile Button */}
           <button
             onClick={onOpenProfile}
-            aria-label="Profil de Cheick Bikienga"
+            aria-label={navigation.profileLabel}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:ring-2 hover:ring-[#7d562d] transition-all p-0.5"
-            title="Notice biographique du Cheick"
+            title={navigation.profileLabel}
           >
             <img
-              alt="Profile Cheick Bikienga"
+              alt={profile.imageAlt || ''}
               className="w-8 h-8 md:w-9 md:h-9 rounded-full object-cover shadow-xs border border-[#ffca98]"
-              src={APP_ASSETS.profile}
+              src={profile.imageUrl}
               referrerPolicy="no-referrer"
             />
           </button>
@@ -172,4 +164,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-

@@ -18,7 +18,7 @@ export class Article {
   @Prop({ required: true }) author: string;
   @Prop({ default: 1, min: 1 }) readingTimeMinutes: number;
   @Prop({ default: 0, min: 0 }) viewsCount: number;
-  @Prop() publishedAt?: Date | null;
+  @Prop({ type: Date }) publishedAt?: Date | null;
   @Prop({ type: Types.ObjectId, ref: Category.name, required: true, index: true }) categoryId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;

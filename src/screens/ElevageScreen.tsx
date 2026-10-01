@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useContent } from '../features/content/ContentContext';
-import { ELEVAGE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
 interface ElevageScreenProps {
@@ -19,7 +18,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
   onToggleBookmark,
 }) => {
   const { get, media } = useContent();
-  const page = get<typeof ELEVAGE_DATA>('elevage.page');
+  const page = get<any>('elevage.page');
   page.videos = media('elevage');
   const [activeFilter, setActiveFilter] = useState('all');
 
@@ -63,7 +62,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
       {/* Filtres Rapides Pastoraux */}
       <div className="w-full px-margin pb-space-md flex items-center gap-space-xs overflow-x-auto no-scrollbar md:flex-wrap">
-        {page.filters.map((flt) => {
+        {page.filters.map((flt: any) => {
           const isActive = activeFilter === flt.id;
           return (
             <button
@@ -93,7 +92,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
-          {page.stats.map((st, i) => (
+          {page.stats.map((st: any, i: number) => (
             <div
               key={i}
               className="p-space-md md:p-5 bg-white rounded-xl shadow-xs flex items-center sm:flex-col sm:items-start justify-between sm:justify-start gap-3 border border-[#c1c8c2]/40 transition-transform hover:-translate-y-0.5"
@@ -199,18 +198,18 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
                     {/* Mini-tableau de ration nutritive */}
                     <div className="p-space-sm bg-[#e7f0ea] rounded-lg flex flex-col gap-1.5 border border-[#c1ecd4]">
                       <div className="flex justify-between items-center text-[#012d1d] font-label-md text-label-md">
-                        <span>Ration équilibrée :</span>
-                        <span className="text-[#7d562d] font-bold">100% Locale</span>
+                        <span>{page.rationLabel}</span>
+                        <span className="text-[#7d562d] font-bold">{page.rationValue}</span>
                       </div>
                       <div className="w-full bg-[#dce5de] rounded-full h-2 overflow-hidden flex">
-                        <div className="bg-[#012d1d] h-full" style={{ width: '45%' }} title="Fanes d'arachide / niébé (45%)" />
-                        <div className="bg-[#7d562d] h-full" style={{ width: '35%' }} title="Tourteau de coton (35%)" />
-                        <div className="bg-[#ffca98] h-full" style={{ width: '20%' }} title="Son de maïs & minéraux (20%)" />
+                        <div className="bg-[#012d1d] h-full" style={{ width: '45%' }} title={page.rationTooltips[0]} />
+                        <div className="bg-[#7d562d] h-full" style={{ width: '35%' }} title={page.rationTooltips[1]} />
+                        <div className="bg-[#ffca98] h-full" style={{ width: '20%' }} title={page.rationTooltips[2]} />
                       </div>
                       <div className="flex justify-between text-[#414844] font-label-sm text-[0.625rem]">
-                        <span>45% Légumineuses</span>
-                        <span>35% Coton</span>
-                        <span>20% Céréales</span>
+                        <span>{page.rationParts[0]}</span>
+                        <span>{page.rationParts[1]}</span>
+                        <span>{page.rationParts[2]}</span>
                       </div>
                     </div>
                   </div>
@@ -454,7 +453,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
                     {/* Étapes clés */}
                     {v.steps && (
                       <div className="space-y-1.5 pt-1">
-                        {v.steps.map((st) => (
+                        {v.steps.map((st: any) => (
                           <div key={st.num} className="flex items-start gap-2 text-body-sm text-[#151d1a]">
                             <span className="w-5 h-5 rounded-full bg-[#e2eae4] text-[#012d1d] flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                               {st.num}
@@ -531,7 +530,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
-          {page.rules.map((rule, idx) => (
+          {page.rules.map((rule: any, idx: number) => (
             <div
               key={idx}
               className="p-space-md bg-white rounded-xl shadow-xs flex items-start gap-space-md border border-[#c1c8c2]/40 hover:border-[#7d562d]/50 transition-colors"
@@ -571,10 +570,10 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
             <div className="flex flex-col gap-1">
               <h3 className="font-headline-sm md:text-2xl text-white font-bold">
-                Participez au renforcement du cheptel sahélien
+                {page.ctaTitle}
               </h3>
               <p className="font-body-sm text-sm text-[#c1ecd4]">
-                Soutenez les campagnes vétérinaires et l'équipement des familles d'éleveurs vulnérables de Nagréogo.
+                {page.ctaDescription}
               </p>
             </div>
           </div>
@@ -585,7 +584,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
               className="py-3 px-6 rounded-xl bg-[#7d562d] text-white font-label-lg shadow-sm hover:bg-[#623f18] active:scale-95 transition-all flex items-center justify-center gap-2 font-bold whitespace-nowrap"
             >
               <span className="material-symbols-outlined text-[20px]">favorite</span>
-              <span>Faire un don</span>
+              <span>{page.donationButton}</span>
             </button>
 
             <button
@@ -593,7 +592,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
               className="py-3 px-6 rounded-xl bg-[#1b4332] text-white font-label-lg active:scale-95 transition-all flex items-center justify-center gap-2 font-semibold hover:bg-opacity-90 whitespace-nowrap"
             >
               <span className="material-symbols-outlined text-[20px]">contact_support</span>
-              <span>Contacter le secrétariat</span>
+              <span>{page.contactButton}</span>
             </button>
           </div>
         </div>

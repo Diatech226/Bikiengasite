@@ -1,9 +1,10 @@
 import React from 'react';
-import { AGRICULTURE_DATA, ELEVAGE_DATA, HOME_ARTICLES, HOME_VIDEOS, HUMANITAIRE_DATA } from '../data/content';
+import { useContent } from '../features/content/ContentContext';
 import { ArticleItem, VideoItem } from '../types';
 
 interface BookmarksModalProps {
   onClose: () => void;
+  articles: ArticleItem[];
   bookmarks: string[];
   onRemoveBookmark: (id: string) => void;
   onSelectVideo: (video: VideoItem) => void;
@@ -12,64 +13,16 @@ interface BookmarksModalProps {
 
 export const BookmarksModal: React.FC<BookmarksModalProps> = ({
   onClose,
+  articles,
   bookmarks,
   onRemoveBookmark,
   onSelectVideo,
   onSelectArticle,
 }) => {
-  // Find all items corresponding to bookmark IDs
-  const allVideos: VideoItem[] = [
-    ...HOME_VIDEOS,
-    ...AGRICULTURE_DATA.videos.map((v) => ({
-      id: v.id,
-      title: v.title,
-      category: v.category,
-      tagLabel: v.tag,
-      tagIcon: v.tagIcon,
-      duration: v.duration,
-      views: '5k+ vues',
-      date: v.date,
-      image: v.image,
-      alt: v.alt,
-      summary: v.description,
-      actionText: v.btnText,
-      sector: 'agriculture' as const,
-    })),
-    ...ELEVAGE_DATA.videos.map((v) => ({
-      id: v.id,
-      title: v.title,
-      category: 'elevage',
-      tagLabel: v.badge,
-      tagIcon: v.badgeIcon,
-      duration: v.duration,
-      views: '6k+ vues',
-      date: v.date,
-      image: v.image,
-      alt: v.alt,
-      summary: v.description,
-      actionText: v.actionText,
-      sector: 'elevage' as const,
-    })),
-    ...HUMANITAIRE_DATA.chronicles.map((v) => ({
-      id: v.id,
-      title: v.title,
-      category: 'humanitaire',
-      tagLabel: v.badge,
-      tagIcon: v.badgeIcon,
-      duration: v.duration,
-      views: '8k+ vues',
-      date: v.location,
-      image: v.image,
-      alt: v.alt,
-      summary: v.description,
-      fullText: `${v.description}\n\n${v.expandedNarrative}`,
-      actionText: 'Lire le récit',
-      sector: 'humanitaire' as const,
-    })),
-  ];
-
-  const bookmarkedVideos = allVideos.filter((v) => bookmarks.includes(v.id));
-  const bookmarkedArticles = HOME_ARTICLES.filter((a) => bookmarks.includes(a.id));
+  const { media } = useContent();
+  const allVideos: VideoItem[] = (['home', 'agriculture', 'elevage', 'humanitaire'] as const).flatMap(media);
+  const bookmarkedVideos = allVideos.filter((video) => bookmarks.includes(video.id));
+  const bookmarkedArticles = articles.filter((article) => bookmarks.includes(article.id));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">

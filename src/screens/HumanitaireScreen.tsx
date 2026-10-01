@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { contactApi, ContactType } from '../services/contactApi';
 import { useContent } from '../features/content/ContentContext';
-import { HUMANITAIRE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
 interface HumanitaireScreenProps {
@@ -22,7 +21,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
   onShare,
 }) => {
   const { get, media } = useContent();
-  const page = get<typeof HUMANITAIRE_DATA>('humanitaire.page');
+  const page = get<any>('humanitaire.page');
   page.chronicles = media('humanitaire');
   const [expandedArticles, setExpandedArticles] = useState<Record<string, boolean>>({});
   const [showQuickForm, setShowQuickForm] = useState(false);
@@ -135,7 +134,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
-            {page.stats.map((st, i) => (
+            {page.stats.map((st: any, i: number) => (
               <div
                 key={i}
                 className="flex items-center sm:flex-col sm:items-center justify-between sm:justify-center p-4 rounded-xl bg-white text-center shadow-xs border border-[#c1c8c2]/30 transition-transform hover:-translate-y-0.5"
@@ -181,10 +180,10 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-headline-md md:text-2xl text-[#012d1d] font-bold">
-              Chroniques de Solidarité
+              {page.chroniclesTitle}
             </h3>
             <p className="font-body-sm text-body-sm text-[#414844]">
-              Vidéos immersives et récits de terrain
+              {page.chroniclesSubtitle}
             </p>
           </div>
           <span className="material-symbols-outlined text-[#414844] text-2xl">video_library</span>
@@ -192,7 +191,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
 
         {/* Stories Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {page.chronicles.map((story) => {
+          {page.chronicles.map((story: any) => {
             const isExpanded = !!expandedArticles[story.id];
             const isSaved = bookmarks.includes(story.id);
 
@@ -334,7 +333,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
         </div>
       </section>
 
-      {/* Section Agir aux côtés du Cheick - 2 Columns on desktop */}
+      {/* Section {page.actionTitle} - 2 Columns on desktop */}
       <section className="px-margin mb-space-xl">
         <div className="p-6 md:p-8 rounded-2xl bg-[#012d1d] text-white shadow-xl relative overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -346,16 +345,16 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                 </div>
                 <div className="flex flex-col">
                   <h3 className="font-headline-sm md:text-2xl text-white leading-tight font-bold">
-                    Agir aux côtés du Cheick
+                    {page.actionTitle}
                   </h3>
                   <span className="font-label-sm text-label-sm text-[#c1ecd4]">
-                    Relayez ou participez aux œuvres de Nagréogo
+                    {page.actionSubtitle}
                   </span>
                 </div>
               </div>
 
               <p className="font-body-sm text-sm text-[#dce5de] leading-relaxed">
-                Votre concours, qu'il soit financier, matériel ou humain, va directement au bénéfice des habitants de Nagréogo et des localités environnantes, sans aucun intermédiaire superflu.
+                {page.actionDescription}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
@@ -364,7 +363,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   className="h-12 px-4 rounded-xl bg-[#ffca98] text-[#2c1600] font-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-[#ffdcbd] transition-colors active:scale-[0.98] font-bold"
                 >
                   <span className="material-symbols-outlined text-[20px]">favorite</span>
-                  <span>Faire un don direct</span>
+                  <span>{page.donationButton}</span>
                 </button>
 
                 <button
@@ -372,13 +371,13 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   className="h-12 px-4 rounded-xl bg-[#7d562d] text-white font-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-[#623f18] transition-colors active:scale-[0.98] font-bold"
                 >
                   <span className="material-symbols-outlined text-[20px]">share</span>
-                  <span>{shareFeedback ? 'Lien copié !' : 'Partager la cause'}</span>
+                  <span>{shareFeedback ? 'Lien copié !' : page.shareButton}</span>
                 </button>
               </div>
 
               <div className="pt-2 flex items-center gap-2 text-xs text-[#c1ecd4]">
                 <span className="material-symbols-outlined text-[16px]">verified</span>
-                <span>Transparence absolue et suivi rigoureux sur le terrain à Nagréogo</span>
+                <span>{page.transparencyText}</span>
               </div>
             </div>
 
@@ -387,9 +386,9 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
               <div className="flex items-center justify-between">
                 <span className="font-label-md text-base text-white font-bold flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#ffca98] text-[20px]">mail</span>
-                  <span>Secrétariat & Engagement Solidaire</span>
+                  <span>{page.contactTitle}</span>
                 </span>
-                <span className="text-xs text-[#c1ecd4]">Réponse rapide</span>
+                <span className="text-xs text-[#c1ecd4]">{page.responseLabel}</span>
               </div>
 
               <form onSubmit={handleFormSubmit} className="flex flex-col gap-3">
@@ -399,7 +398,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                     required
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Votre nom complet"
+                    placeholder={page.namePlaceholder}
                     className="w-full h-11 px-3 rounded-lg bg-white text-[#151d1a] font-body-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#ffca98]"
                   />
 
@@ -408,7 +407,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                     required
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="Téléphone / WhatsApp"
+                    placeholder={page.phonePlaceholder}
                     className="w-full h-11 px-3 rounded-lg bg-white text-[#151d1a] font-body-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#ffca98]"
                   />
                 </div>
@@ -418,17 +417,14 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   onChange={(e) => setContactType(e.target.value)}
                   className="w-full h-11 px-3 rounded-lg bg-white text-[#151d1a] font-body-sm text-sm focus:outline-none"
                 >
-                  <option value="forage">Contribution Forage & Eau Potable</option>
-                  <option value="scolaire">Soutien scolaire et matériel éducatif</option>
-                  <option value="vivres">Dons de vivres & céréales d'urgence</option>
-                  <option value="benevole">Volontariat de compétences sur le terrain</option>
+                  {page.contactOptions.map((option: { value: 'forage'|'scolaire'|'vivres'|'benevole'; label: string }) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
 
                 <textarea
                   rows={2}
                   value={contactMessage}
                   onChange={(e) => setContactMessage(e.target.value)}
-                  placeholder="Votre message ou proposition d'aide..."
+                  placeholder={page.messagePlaceholder}
                   className="w-full p-3 rounded-lg bg-white text-[#151d1a] font-body-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#ffca98]"
                 />
 
@@ -438,13 +434,13 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   className="h-11 disabled:opacity-60 rounded-lg bg-[#ffdcbd] text-[#2c1600] font-label-lg font-bold flex items-center justify-center gap-2 hover:bg-[#ffca98] transition-colors shadow-sm"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>{formLoading ? 'Transmission…' : 'Transmettre mon engagement'}</span>
+                  <span>{formLoading ? 'Transmission…' : page.contactSubmitLabel}</span>
                 </button>
 
                 {formError && <span role="alert" className="text-sm text-red-200 text-center font-bold">{formError}</span>}
                 {formFeedback && (
                   <span className="font-label-sm text-sm text-[#ffdcbd] text-center pt-1 font-bold animate-in fade-in">
-                    Barakallahou fik ! Votre demande a été reçue avec gratitude.
+                    {page.contactSuccessMessage}
                   </span>
                 )}
               </form>

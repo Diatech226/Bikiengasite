@@ -20,6 +20,6 @@ describe('AuthService', () => {
   });
   it('refuse un login invalide', async () => {
     users.findOne.mockReturnValue(query(user));
-    await expect(new AuthService(users, {}, config).login({ email: user.email, password: 'wrong-password' })).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(new AuthService(users, {} as any, config).login({ email: user.email, password: 'wrong-password' })).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

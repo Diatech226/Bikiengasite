@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ArticleItem } from '../types';
 import { articleApi } from '../services/articleApi';
+import { useContent } from '../features/content/ContentContext';
+import { SiteProfileContent } from '../services/contentApi';
 
 interface ArticleModalProps {
   article: ArticleItem | null;
@@ -17,6 +19,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onToggleBookmark,
   onShare,
 }) => {
+  const { get } = useContent(); const profile = get<SiteProfileContent>('site.profile');
   const [fontSizeLarge, setFontSizeLarge] = useState(false);
 
   useEffect(() => {
@@ -93,13 +96,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#dce5de]">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#ffca98] text-[#7a532a] flex items-center justify-center font-bold text-xs">
-                  CB
+                  {(article.author || profile.name || '').split(/\s+/).map((part) => part[0]).slice(0, 2).join('')}
                 </div>
                 <div className="flex flex-col">
                   <span className="font-label-sm text-xs font-bold text-[#012d1d]">
-                    Cheick Bikienga Seydou
+                    {article.author || profile.name}
                   </span>
-                  <span className="text-[11px] text-[#7d562d]">Guide Spirituel & Bâtisseur</span>
+                  {profile.title && <span className="text-[11px] text-[#7d562d]">{profile.title}</span>}
                 </div>
               </div>
 
