@@ -18,14 +18,14 @@ export class CategoriesService {
   }
 
   async create(dto: CreateCategoryDto) {
-    const slug = slugify(dto.name, { lower: true, strict: true, locale: 'fr' });
+    const slug = slugify(dto.name.replace(/\s*&\s*/g, ' '), { lower: true, strict: true });
     if (await this.categories.exists({ $or: [{ slug }, { name: dto.name }] })) throw new ConflictException('Catégorie existante');
     return this.categories.create({ ...dto, slug });
   }
 
   async update(id: string, dto: UpdateCategoryDto) {
     await this.require(id);
-    const update = { ...dto, ...(dto.name ? { slug: slugify(dto.name, { lower: true, strict: true, locale: 'fr' }) } : {}) };
+    const update = { ...dto, ...(dto.name ? { slug: slugify(dto.name.replace(/\s*&\s*/g, ' '), { lower: true, strict: true }) } : {}) };
     if (dto.name && await this.categories.exists({ _id: { $ne: id }, $or: [{ name: dto.name }, { slug: update.slug }] })) throw new ConflictException('Catégorie existante');
     return this.categories.findByIdAndUpdate(id, update, { new: true, runValidators: true }).exec();
   }

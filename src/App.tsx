@@ -26,10 +26,11 @@ import { useBookmarks } from './features/bookmarks/hooks/useBookmarks';
 import { useContent } from './features/content/ContentContext';
 
 export default function App() {
-  const { get, refresh: refreshContent } = useContent();
+  const { get, status: contentStatus, refresh: refreshContent } = useContent();
   const brand = get<any>('site.brand');
   const footer = get<any>('site.footer');
   const contact = get<any>('site.contact');
+  const navigation = get<any>('site.navigation');
   const [currentTab, setCurrentTab] = useState<TabType>('accueil');
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);
@@ -42,6 +43,9 @@ export default function App() {
   const { message: toastMessage, showToast } = useToast();
   const { bookmarks, toggleBookmark: handleToggleBookmark } = useBookmarks(showToast);
   const { articles, loading: articlesLoading, error: articlesError, refresh: refreshArticles } = useArticles();
+
+  if (contentStatus === 'loading') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]" role="status">Chargement du contenu…</div>;
+  if (contentStatus === 'error') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]"><div className="text-center"><p>Le contenu est momentanément indisponible.</p><button className="mt-4 px-4 py-2 rounded-full bg-[#012d1d] text-white" onClick={() => void refreshContent()}>Réessayer</button></div></div>;
 
   const handleShare = (title: string, desc: string) => {
     if (navigator.share) {
@@ -185,7 +189,7 @@ export default function App() {
                     onClick={() => setCurrentTab('accueil')}
                     className="hover:text-white transition-colors"
                   >
-                    Accueil & Échos
+                    {navigation.items?.find((item: any) => item.id === 'accueil')?.footerLabel}
                   </button>
                 </li>
                 <li>
@@ -193,7 +197,7 @@ export default function App() {
                     onClick={() => setCurrentTab('agriculture')}
                     className="hover:text-white transition-colors"
                   >
-                    Pôle Agricole & Zaï
+                    {navigation.items?.find((item: any) => item.id === 'agriculture')?.footerLabel}
                   </button>
                 </li>
                 <li>
@@ -201,7 +205,7 @@ export default function App() {
                     onClick={() => setCurrentTab('elevage')}
                     className="hover:text-white transition-colors"
                   >
-                    Pôle Pastoral & Élevage
+                    {navigation.items?.find((item: any) => item.id === 'elevage')?.footerLabel}
                   </button>
                 </li>
                 <li>
@@ -209,18 +213,10 @@ export default function App() {
                     onClick={() => setCurrentTab('humanitaire')}
                     className="hover:text-white transition-colors"
                   >
-                    Œuvres Humanitaires & Eau
+                    {navigation.items?.find((item: any) => item.id === 'humanitaire')?.footerLabel}
                   </button>
                 </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('admin')}
-                    className="hover:text-[#ffca98] transition-colors flex items-center gap-1.5 font-medium"
-                  >
-                    <span>Espace Rédaction & Blog</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-[#ffca98]/20 text-[#ffca98] rounded-full">Admin</span>
-                  </button>
-                </li>
+
               </ul>
             </div>
 
@@ -240,13 +236,7 @@ export default function App() {
                   <span className="material-symbols-outlined text-[16px]">favorite</span>
                   <span>{footer.donationButton}</span>
                 </button>
-                <button
-                  onClick={() => setCurrentTab('admin')}
-                  className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-xs text-[#ffca98] transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-                  <span>Gérer le blog (Admin)</span>
-                </button>
+
                 <button
                   onClick={() => setIsProfileOpen(true)}
                   className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-[#dce5de] transition-colors flex items-center justify-center gap-1.5"
@@ -350,6 +340,7 @@ export default function App() {
         {/* Bookmarks Modal */}
         {isBookmarksOpen && (
           <BookmarksModal
+            articles={articles}
             onClose={() => setIsBookmarksOpen(false)}
             bookmarks={bookmarks}
             onRemoveBookmark={(id) => handleToggleBookmark(id, '')}

@@ -50,7 +50,7 @@ export class ArticlesService {
       const escaped = query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [{ title: { $regex: escaped, $options: 'i' } }, { excerpt: { $regex: escaped, $options: 'i' } }];
     }
-    const sort = query.sort === 'oldest' ? { publishedAt: 1 as const } : query.sort === 'popular' ? { viewsCount: -1 as const } : { publishedAt: -1 as const };
+    const sort: Record<string, 1 | -1> = query.sort === 'oldest' ? { publishedAt: 1 } : query.sort === 'popular' ? { viewsCount: -1 } : { publishedAt: -1 };
     const [documents, total] = await Promise.all([
       this.articles.find(filter).populate(this.categoryPopulate).sort(sort).skip((query.page - 1) * query.limit).limit(query.limit).exec(),
       this.articles.countDocuments(filter).exec(),

@@ -1,15 +1,60 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { AGRICULTURE_DATA, ELEVAGE_DATA, HUMANITAIRE_DATA, HOME_CONTENT, HOME_METRICS, HOME_VIDEOS, SITE_CONTENT } from '../../data/content';
-import { contentApi, MediaItem } from '../../services/contentApi';
-const fallbacks: Record<string, any> = { 'site.brand': SITE_CONTENT.brand, 'site.footer': SITE_CONTENT.footer, 'site.contact': SITE_CONTENT.contact, 'site.profile': SITE_CONTENT.profile, 'site.guide': SITE_CONTENT.guide, 'home.page': { ...HOME_CONTENT, metrics: HOME_METRICS }, 'agriculture.page': AGRICULTURE_DATA, 'elevage.page': ELEVAGE_DATA, 'humanitaire.page': HUMANITAIRE_DATA };
-function legacy(item: MediaItem): any { return { ...(item.metadata || {}), id: item.slug, title: item.title, description: item.description, summary: item.description, fullText: item.body, image: item.imageUrl, alt: item.imageAlt, badge: item.badge, tag: item.badge, tagLabel: item.badge, date: item.dateLabel, statMetric: item.metric, stats: item.metric, btnText: item.buttonLabel, actionText: item.buttonLabel, category: item.metadata?.category || 'all', duration: item.metadata?.duration || '', tagIcon: item.metadata?.tagIcon || 'article', badgeIcon: item.metadata?.badgeIcon || 'article', statsIcon: item.metadata?.statsIcon || 'verified', progress: '', sector: item.section }; }
-type State = { get: <T = any>(key: string) => T; media: (section: string) => any[]; refresh: () => Promise<void> };
-const Context = createContext<State>({ get: (key) => fallbacks[key], media: (section) => section === 'home' ? HOME_VIDEOS : fallbacks[`${section}.page`]?.videos || [], refresh: async () => {} });
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { contentApi, ContentMap, ContentStatus, MediaItem } from '../../services/contentApi';
+import { VideoItem } from '../../types';
+
+function toVideo(item: MediaItem): VideoItem {
+  return {
+    id: item.slug, slug: item.slug, title: item.title,
+    description: item.description,
+    summary: item.description, fullText: item.body,
+    image: item.imageUrl || '', alt: item.imageAlt || '',
+    tagLabel: item.badge || '', tagIcon: item.metadata.tagIcon || 'article',
+    category: item.metadata.category || item.section,
+    duration: item.metadata.duration || '', views: item.metric || '',
+    badgeSubtitle: item.metadata.statusText || '', date: item.dateLabel || '',
+    actionText: item.buttonLabel || '', sector: item.section === 'home' ? 'humanitaire' : item.section,
+    stats: item.metadata.impactBox || item.metric, statsIcon: item.metadata.statsIcon,
+    tag: item.badge || '', badge: item.badge || '', badgeIcon: item.metadata.badgeIcon || 'article',
+    progress: '', statMetric: item.metric || '', statIcon: item.metadata.statsIcon || 'verified', btnText: item.buttonLabel || '',
+    location: item.metadata.location || item.dateLabel || '', statusText: item.metadata.statusText || '',
+    expandedNarrative: item.metadata.expandedNarrative || item.body || '', impactBox: item.metadata.impactBox || '', steps: [],
+  } as VideoItem;
+}
+
+type State = {
+  get: <T = unknown>(key: keyof ContentMap) => T;
+  media: (section: MediaItem['section']) => any[];
+  mediaItems: MediaItem[];
+  status: ContentStatus;
+  refresh: () => Promise<void>;
+};
+
+const Context = createContext<State | null>(null);
+
 export function ContentProvider({ children }: { children: ReactNode }) {
-  const [blocks, setBlocks] = useState<Record<string, any>>({}); const [items, setItems] = useState<MediaItem[]>([]);
-  const refresh = async () => { try { const payload = await contentApi.public(); setBlocks(Object.fromEntries(payload.blocks.map((b) => [b.key, b.data]))); setItems(payload.mediaItems); } catch { /* fallback de disponibilité uniquement */ } };
-  useEffect(() => { void refresh(); }, []);
-  const value = useMemo<State>(() => ({ get: (key) => ({ ...(fallbacks[key] || {}), ...(blocks[key] || {}) }), media: (section) => { const remote = items.filter((i) => i.section === section && i.isActive).sort((a, b) => a.order - b.order).map(legacy); return remote.length ? remote : section === 'home' ? HOME_VIDEOS : fallbacks[`${section}.page`]?.videos || []; }, refresh }), [blocks, items]);
+  const [blocks, setBlocks] = useState<Partial<ContentMap>>({});
+  const [items, setItems] = useState<MediaItem[]>([]);
+  const [status, setStatus] = useState<ContentStatus>('loading');
+  const refresh = useCallback(async () => {
+    setStatus((current) => current === 'loaded' ? current : 'loading');
+    try {
+      const payload = await contentApi.public();
+      setBlocks(Object.fromEntries(payload.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>);
+      setItems(payload.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
+      setStatus('loaded');
+    } catch { setStatus('error'); }
+  }, []);
+  useEffect(() => { void refresh(); }, [refresh]);
+  const value = useMemo<State>(() => ({
+    get: (key) => (blocks[key] || {}) as never,
+    media: (section) => items.filter((item) => item.section === section).map(toVideo),
+    mediaItems: items, status, refresh,
+  }), [blocks, items, status, refresh]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
-export const useContent = () => useContext(Context);
+
+export function useContent() {
+  const context = useContext(Context);
+  if (!context) throw new Error('useContent doit être utilisé dans ContentProvider');
+  return context;
+}

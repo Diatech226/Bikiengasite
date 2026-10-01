@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useContent } from '../features/content/ContentContext';
-import { AGRICULTURE_DATA } from '../data/content';
 import { ArticleItem, VideoItem } from '../types';
 
 interface AgricultureScreenProps {
@@ -19,11 +18,11 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
   onToggleBookmark,
 }) => {
   const { get, media } = useContent();
-  const page = get<typeof AGRICULTURE_DATA>('agriculture.page');
+  const page = get<any>('agriculture.page');
   page.videos = media('agriculture');
   const [activeFilter, setActiveFilter] = useState('all');
 
-  const filteredVideos = page.videos.filter((v) => {
+  const filteredVideos = page.videos.filter((v: any) => {
     if (activeFilter === 'all') return true;
     return v.category === activeFilter;
   });
@@ -52,7 +51,7 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
 
           {/* Mini statistiques d'impact - 3 cols on all sizes */}
           <div className="lg:col-span-5 grid grid-cols-3 gap-2.5 sm:gap-4">
-            {page.stats.map((st, i) => (
+            {page.stats.map((st: any, i: number) => (
               <div
                 key={i}
                 className="flex flex-col p-3 sm:p-4 rounded-2xl bg-[#edf6ef] border border-[#c1c8c2]/50 shadow-xs hover:scale-102 transition-transform"
@@ -74,7 +73,7 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
 
       {/* Barre de filtres fluides */}
       <section className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-        {page.filters.map((flt) => {
+        {page.filters.map((flt: any) => {
           const isActive = activeFilter === flt.id;
           return (
             <button
@@ -95,7 +94,7 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
 
       {/* Flux des Réalisations & Vidéos - Responsive 3-col Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredVideos.map((video) => {
+        {filteredVideos.map((video: any) => {
           const isSaved = bookmarks.includes(video.id);
 
           return (
@@ -248,13 +247,13 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
             </div>
             <div className="flex flex-col min-w-0">
               <span className="font-label-sm text-xs uppercase tracking-wider text-[#7d562d] font-bold">
-                Document Pratique & Formation
+                {page.guideCard.badge}
               </span>
               <h4 className="font-headline-sm text-base md:text-lg text-[#012d1d] font-bold leading-tight mt-0.5">
-                Fiche Technique Agricole 2024
+                {page.guideCard.title}
               </h4>
               <p className="font-body-sm text-xs md:text-sm text-[#414844] mt-1 leading-relaxed">
-                Calendrier des semis, dimensions des cuvettes de Zaï et dosage de compost organique sahélien pour les agriculteurs.
+                {page.guideCard.description}
               </p>
             </div>
           </div>
@@ -264,7 +263,7 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
               <span className="material-symbols-outlined text-[17px] text-red-600">
                 picture_as_pdf
               </span>
-              <span>PDF Illustré • 2.4 Mo</span>
+              <span>{page.guideCard.fileLabel}</span>
             </div>
 
             <button
@@ -272,7 +271,7 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
               className="px-5 py-2.5 rounded-full bg-[#012d1d] text-white font-label-md text-xs font-semibold flex items-center gap-2 shadow hover:bg-[#1b4332] transition-all active:scale-95"
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
-              <span>Consulter le guide</span>
+              <span>{page.guideCard.buttonLabel}</span>
             </button>
           </div>
         </div>

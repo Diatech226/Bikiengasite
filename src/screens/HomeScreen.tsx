@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { HOME_ARTICLES, HOME_CONTENT, HOME_METRICS } from '../data/content';
 import { useContent } from '../features/content/ContentContext';
 import { ArticleItem, VideoItem } from '../types';
 
@@ -31,17 +30,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onRetryArticles,
 }) => {
   const { get, media } = useContent();
-  const page = get<typeof HOME_CONTENT & { metrics: typeof HOME_METRICS }>('home.page');
+  const page = get<any>('home.page');
   const videos = media('home');
   const [activeFilter, setActiveFilter] = useState<'all' | 'video' | 'agriculture' | 'elevage' | 'humanitaire'>('all');
 
-  const filterChips: { id: typeof activeFilter; label: string; icon: string }[] = [
-    { id: 'all', label: 'Tous', icon: 'all_inclusive' },
-    { id: 'video', label: 'Vidéos récentes', icon: 'smart_display' },
-    { id: 'agriculture', label: 'Agriculture', icon: 'eco' },
-    { id: 'elevage', label: 'Élevage', icon: 'pets' },
-    { id: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' },
-  ];
+  const filterChips = page.filters as { id: typeof activeFilter; label: string; icon: string }[];
 
   const filteredVideos = videos.filter((v) => {
     if (activeFilter === 'all') return true;
@@ -73,7 +66,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 {page.primaryButton}
               </button>
               <button
-                onClick={() => onOpenArticle(HOME_ARTICLES[0])}
+                onClick={() => articles[0] && onOpenArticle(articles[0])}
+                disabled={!articles.length}
                 className="px-5 py-2.5 rounded-full bg-[#e2eae4] text-[#012d1d] font-label-md text-xs font-semibold hover:bg-[#dce5de] transition-colors"
               >
                 {page.secondaryButton}
@@ -127,7 +121,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Mobile scroll, sm/md/lg 4-col grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
-          {page.metrics.map((metric, idx) => (
+          {page.metrics.map((metric: any, idx: number) => (
             <div
               key={idx}
               className={`${metric.bgColor} rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow-xs border border-black/5 hover:scale-102 transition-transform`}
@@ -319,21 +313,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <span className="font-label-sm text-xs uppercase tracking-wider text-[#7d562d] font-bold">
-              Méditations & Enseignements
+              {page.articlesEyebrow}
             </span>
             <h3 className="font-headline-sm text-lg md:text-xl text-[#012d1d] font-bold">
-              Derniers écrits & Paroles de sagesse
+              {page.articlesHeading}
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={onOpenAdmin}
-              className="text-xs px-3 py-1.5 rounded-full bg-[#f3fbf5] hover:bg-[#e2eae4] text-[#012d1d] border border-[#c1c8c2] font-semibold flex items-center gap-1.5 transition-colors"
-              title="Accéder à l'espace de gestion et rédaction du blog"
-            >
-              <span className="material-symbols-outlined text-[16px] text-[#7d562d]">edit_note</span>
-              <span>Gérer le blog</span>
-            </button>
+
 
             {articles.filter((a) => (a.status || 'published') === 'published').length > 0 && (
               <button
@@ -343,7 +330,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 }}
                 className="text-[#7d562d] font-label-md text-xs md:text-sm font-bold flex items-center hover:underline"
               >
-                <span>Tout voir</span>
+                <span>{page.articlesMoreLabel}</span>
                 <span className="material-symbols-outlined text-[16px]">chevron_right</span>
               </button>
             )}
@@ -440,7 +427,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </span>
             </div>
             <h3 className="font-headline-md text-xl md:text-2xl lg:text-3xl leading-tight text-white font-bold">
-              Participez aux prochains chantiers de Nagréogo
+              {page.upcomingTitle}
             </h3>
             <p className="font-body-sm text-xs md:text-sm text-[#c1ecd4] leading-relaxed">
               Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins. Chaque geste enracine l'espoir et l'autonomie sur notre terre ancestrale.

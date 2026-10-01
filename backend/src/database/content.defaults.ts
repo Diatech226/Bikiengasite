@@ -12,14 +12,19 @@ export const HOME_CONTENT = {
   primaryButton: 'Participer aux chantiers', secondaryButton: 'Lire les méditations',
   quote: '« Nourrir les âmes, cultiver la terre et tendre la main. »', quoteAuthor: 'Cheick Bikienga Seydou — Guide Spirituel & Bâtisseur', quoteCaption: 'Fondateur du domaine pilote agropastoral de Nagréogo',
   impactTitle: 'Impact Réel à Nagréogo', impactPeriod: 'Bilan Consolidé 2024', storiesTitle: 'Reportages et récits', articlesTitle: 'Articles récents',
+  articlesEyebrow: 'Méditations & Enseignements', articlesHeading: 'Derniers écrits & Paroles de sagesse', articlesMoreLabel: 'Tout voir', upcomingTitle: 'Participez aux prochains chantiers de Nagréogo',
+  filters: [{ id: 'all', label: 'Tous', icon: 'all_inclusive' }, { id: 'video', label: 'Vidéos récentes', icon: 'smart_display' }, { id: 'agriculture', label: 'Agriculture', icon: 'eco' }, { id: 'elevage', label: 'Élevage', icon: 'pets' }, { id: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' }],
 };
 
 export const SITE_CONTENT = {
   brand: { name: 'Sillon Sahélien', subtitle: 'Nagréogo & Cheick Bikienga Seydou', logoUrl: APP_ASSETS.logo, logoAlt: 'Logo Sillon Sahélien' },
+  navigation: { items: [{ id: 'accueil', label: 'Accueil', footerLabel: 'Accueil & Échos' }, { id: 'agriculture', label: 'Agriculture', footerLabel: 'Pôle Agricole & Zaï' }, { id: 'elevage', label: 'Élevage', footerLabel: 'Pôle Pastoral & Élevage' }, { id: 'humanitaire', label: 'Humanitaire', footerLabel: 'Œuvres Humanitaires & Eau' }], searchLabel: 'Rechercher…', supportLabel: "Soutenir l’action", profileLabel: 'Notice biographique du Cheick' },
   contact: { location: 'Nagréogo, Région du Plateau-Central, Burkina Faso', email: '', phone: '', whatsapp: '' },
   footer: { description: 'Plateforme officielle de valorisation agro-écologique, pastorale et humanitaire du village de Nagréogo (Burkina Faso). Allier tradition sahélienne, science régénérative et solidarité fraternelle.', navigationTitle: "Pôles d'Action", supportTitle: 'Soutien & Fraternité', supportDescription: 'Soutenez les forages, les arbres et les semences paysannes locales par un don ou en contactant le secrétariat.', donationButton: 'Faire un don aux œuvres', profileButton: 'Biographie du Cheick', copyright: '© 2024-2026 Sillon Sahélien • Cheick Bikienga Seydou — Nagréogo. Tous droits réservés.', signature: 'Agro-écologie • Pâturage régénératif • Fraternité' },
-  profile: { name: 'Cheick Bikienga Seydou', title: 'Guide spirituel & bâtisseur', biography: "Engagé au service de Nagréogo, le Cheick unit transmission spirituelle, régénération des terres et solidarité communautaire.", quote: 'Nourrir les âmes, cultiver la terre et tendre la main.', imageUrl: APP_ASSETS.profile, imageAlt: 'Portrait du Cheick Bikienga Seydou' },
-  guide: { title: 'Guide maraîcher', introduction: "Principes pratiques pour une agriculture sahélienne économe en eau et respectueuse des sols.", buttonLabel: 'Fermer le guide' },
+  profile: { name: 'Cheick Bikienga Seydou', title: 'Guide spirituel & bâtisseur', biography: "Engagé au service de Nagréogo, le Cheick unit transmission spirituelle, régénération des terres et solidarité communautaire.", quote: 'Nourrir les âmes, cultiver la terre et tendre la main.', imageUrl: APP_ASSETS.profile, imageAlt: 'Portrait du Cheick Bikienga Seydou', buttonLabel: 'Agir aux côtés du Cheick' },
+  guide: { badge: 'Guide pratique', title: 'Guide maraîcher', introduction: "Principes pratiques pour une agriculture sahélienne économe en eau et respectueuse des sols.", buttonLabel: 'Fermer le guide' },
+  donation: { badge: 'Solidarité Directe • Nagréogo', eyebrow: 'Engagement & Fraternité', title: 'Soutenir une action du Cheick Bikienga', introduction: 'Votre contribution va directement au financement des chantiers communautaires à Nagréogo, sans intermédiaire.', projectLabel: 'Projet à soutenir *', nameLabel: 'Votre nom *', namePlaceholder: 'Nom et prénom', contactLabel: 'WhatsApp / Mobile *', contactPlaceholder: '+226 ... / International', emailLabel: 'E-mail (facultatif)', emailPlaceholder: 'nom@exemple.com', amountLabel: 'Montant indicatif ou proposition de don', messageLabel: 'Message / Remarques au secrétariat', messagePlaceholder: "Précisions sur vos souhaits, intentions ou demande d’échange direct…", submitLabel: 'Transmettre mon soutien', successBadge: 'Bénédiction & Remerciement', successTitle: "Qu’Allah bénisse votre générosité, {name} !", successMessage: 'Votre intention de don pour {category} {amount} a bien été transmise. Il ne s’agit pas d’une confirmation de paiement. Le secrétariat humanitaire prendra attache avec vous sur {contact}.', categories: [{ value: 'forage', label: 'Eau Potable & Forage Solaire' }, { value: 'cereales', label: 'Banque de Céréales' }, { value: 'orphelins', label: 'Kits Scolaires' }, { value: 'arbres', label: 'Reboisement' }, { value: 'materiel', label: 'Don en nature' }], suggestedAmounts: [{ value: 15000, label: '15 000 FCFA' }, { value: 50000, label: '50 000 FCFA' }, { value: 150000, label: '150 000 FCFA' }] },
+  search: { placeholder: 'Rechercher dans les récits et articles…', suggestionsTitle: 'Recherches suggérées', mediaTitle: 'Vidéos & Reportages', articlesTitle: 'Méditations & Enseignements', emptyMessage: 'Aucun résultat trouvé', suggestions: ['Zaï', 'Forage solaire', 'Embouche bovine', 'Graines', 'Laiterie', 'Kits scolaires'] },
 };
 
 export const HOME_METRICS: MetricCard[] = [
@@ -202,6 +207,7 @@ Chaque élève sème, entretient un arbre fruitier qui porte son nom et apprend 
 ];
 
 export const AGRICULTURE_DATA = {
+  guideCard: { badge: 'Document Pratique & Formation', title: 'Fiche Technique Agricole 2024', description: 'Calendrier des semis, dimensions des cuvettes de Zaï et dosage de compost organique sahélien pour les agriculteurs.', fileLabel: 'PDF Illustré • 2.4 Mo', buttonLabel: 'Consulter le guide' },
   header: {
     badge: 'Pôle Agricole',
     title: 'Sillons Verts de Nagréogo',
@@ -276,6 +282,7 @@ export const AGRICULTURE_DATA = {
 };
 
 export const ELEVAGE_DATA = {
+  rationLabel: 'Ration équilibrée :', rationValue: '100% Locale', rationParts: ['45% Légumineuses', '35% Coton', '20% Céréales'], rationTooltips: ["Fanes d’arachide / niébé (45%)", 'Tourteau de coton (35%)', 'Son de maïs & minéraux (20%)'], ctaTitle: 'Participez au renforcement du cheptel sahélien', ctaDescription: "Soutenez les campagnes vétérinaires et l’équipement des familles d’éleveurs vulnérables de Nagréogo.", donationButton: 'Faire un don', contactButton: 'Contacter le secrétariat',
   header: {
     badge: 'Pôle Pastoral & Élevage',
     title: 'Modernisation & Préservation Pastorale à Nagréogo',
@@ -398,6 +405,7 @@ export const HUMANITAIRE_DATA = {
     percent: 82,
     note: 'Foration terminée • Installation du groupe solaire et cuve en cours',
   },
+  chroniclesTitle: 'Chroniques de Solidarité', chroniclesSubtitle: 'Vidéos immersives et récits de terrain', actionTitle: 'Agir aux côtés du Cheick', actionSubtitle: 'Relayez ou participez aux œuvres de Nagréogo', actionDescription: 'Votre concours transforme durablement la vie des familles.', donationButton: 'Faire un don direct', shareButton: 'Partager la cause', transparencyText: 'Transparence absolue sur chaque contribution reçue.', contactTitle: 'Secrétariat & Engagement Solidaire', responseLabel: 'Réponse rapide', namePlaceholder: 'Votre nom complet', phonePlaceholder: 'Téléphone / WhatsApp', messagePlaceholder: 'Votre message…', contactSubmitLabel: 'Transmettre mon engagement', contactSuccessMessage: 'Barakallahou fik ! Votre engagement a bien été transmis.', contactOptions: [{ value: 'forage', label: 'Contribution Forage & Eau Potable' }, { value: 'scolaire', label: 'Soutien scolaire et kits' }, { value: 'vivres', label: 'Dons de vivres' }, { value: 'benevole', label: 'Volontariat' }],
   chronicles: [
     {
       id: 'forage-38',

@@ -20,8 +20,8 @@ export class AuthService {
     const payload = { sub: user._id.toString(), email: user.email, role: user.role };
     const jti = randomUUID();
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(payload, { secret: this.config.getOrThrow('JWT_ACCESS_SECRET'), expiresIn: this.config.get('JWT_ACCESS_EXPIRES_IN', '15m') as never }),
-      this.jwt.signAsync({ ...payload, jti, type: 'refresh' }, { secret: this.config.getOrThrow('JWT_REFRESH_SECRET'), expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN', '7d') as never }),
+      this.jwt.signAsync(payload, { secret: this.config.getOrThrow('JWT_ACCESS_SECRET'), expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m') as never }),
+      this.jwt.signAsync({ ...payload, jti, type: 'refresh' }, { secret: this.config.getOrThrow('JWT_REFRESH_SECRET'), expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d') as never }),
     ]);
     await this.users.updateOne({ _id: user._id }, { refreshTokenHash: await argon2.hash(refreshToken), refreshTokenJti: jti });
     return { accessToken, refreshToken };

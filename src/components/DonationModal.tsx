@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { donationApi } from '../services/donationApi';
+import { useContent } from '../features/content/ContentContext';
+import { SiteDonationContent } from '../services/contentApi';
 
 interface DonationModalProps {
   onClose: () => void;
@@ -7,23 +9,20 @@ interface DonationModalProps {
 }
 
 export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
+  const { get } = useContent();
+  const donation = get<SiteDonationContent>('site.donation');
+  const categories = donation.categories || [];
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState(defaultCategory || 'forage');
-  const [amount, setAmount] = useState('50 000 FCFA');
+  const [amount, setAmount] = useState(() => donation.suggestedAmounts?.[0]?.label || '');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const categories = [
-    { id: 'forage', label: 'Eau Potable & Forage Solaire (Puits N°39)' },
-    { id: 'cereales', label: 'Banque de Céréales & Vivres de Soudure' },
-    { id: 'orphelins', label: 'Kits Scolaires & Bourses pour Orphelins' },
-    { id: 'arbres', label: 'Reboisement & Ceinture Verte (10 000 arbres)' },
-    { id: 'materiel', label: 'Don en nature (outils agricoles, semences, panneaux)' },
-  ];
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
@@ -46,7 +45,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
               handshake
             </span>
             <span className="font-label-md text-xs font-semibold tracking-wide text-[#ffdcbd]">
-              Solidarité Directe • Nagréogo
+              {donation.badge}
             </span>
           </div>
           <button
@@ -64,20 +63,20 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
             <>
               <div>
                 <span className="font-label-sm text-[11px] font-bold text-[#7d562d] uppercase tracking-wider">
-                  Engagement & Fraternité
+                  {donation.eyebrow}
                 </span>
                 <h2 className="font-headline-sm text-xl text-[#012d1d] font-bold mt-1">
-                  Soutenir une action du Cheick Bikienga
+                  {donation.title}
                 </h2>
                 <p className="font-body-sm text-xs text-[#414844] mt-1">
-                  Votre contribution va directement au financement des chantiers communautaires à Nagréogo, sans intermédiaire.
+                  {donation.introduction}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
-                    Projet à soutenir *
+                    {donation.projectLabel}
                   </label>
                   <select
                     value={category}
@@ -89,7 +88,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                     className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs font-medium text-[#151d1a] focus:outline-none focus:ring-2 focus:ring-[#7d562d]"
                   >
                     {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
+                      <option key={c.value} value={c.value}>
                         {c.label}
                       </option>
                     ))}
@@ -99,43 +98,43 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
-                      Votre Nom *
+                      {donation.nameLabel}
                     </label>
                     <input
                       type="text"
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Nom et Prénom"
+                      placeholder={donation.namePlaceholder}
                       className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]"
                     />
                   </div>
                   <div>
                     <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
-                      WhatsApp / Mobile *
+                      {donation.contactLabel}
                     </label>
                     <input
                       type="tel"
                       required
                       value={contact}
                       onChange={(e) => setContact(e.target.value)}
-                      placeholder="+226 ... / International"
+                      placeholder={donation.contactPlaceholder}
                       className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">E-mail (facultatif)</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nom@exemple.com" className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
+                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">{donation.emailLabel}</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={donation.emailPlaceholder} className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
                 </div>
 
                 {category !== 'materiel' && <div>
                   <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
-                    Montant indicatif ou proposition de don
+                    {donation.amountLabel}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {['15 000 FCFA', '50 000 FCFA', '150 000 FCFA'].map((val) => (
+                    {(donation.suggestedAmounts || []).map(({ label: val }) => (
                       <button
                         type="button"
                         key={val}
@@ -154,13 +153,13 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
 
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
-                    Message / Remarques au secrétariat
+                    {donation.messageLabel}
                   </label>
                   <textarea
                     rows={2}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Précisions sur vos souhaits, intentions ou demande d'échange direct..."
+                    placeholder={donation.messagePlaceholder}
                     className="w-full p-2.5 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]"
                   />
                 </div>
@@ -172,7 +171,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   className="w-full h-12 disabled:opacity-60 rounded-xl bg-[#012d1d] text-white font-label-md text-sm font-bold shadow-md hover:bg-[#1b4332] transition-all flex items-center justify-center gap-2 mt-1 active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>{loading ? 'Transmission…' : 'Transmettre mon soutien'}</span>
+                  <span>{loading ? 'Transmission…' : donation.submitLabel}</span>
                 </button>
               </form>
             </>
@@ -184,13 +183,13 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
 
               <div>
                 <span className="font-label-sm text-[11px] text-[#7d562d] uppercase tracking-wider font-bold">
-                  Bénédiction & Remerciement
+                  {donation.successBadge}
                 </span>
                 <h3 className="font-headline-sm text-xl text-[#012d1d] font-bold mt-1">
-                  Qu'Allah bénisse votre générosité, {name} !
+                  {donation.successTitle?.replace('{name}', name)}
                 </h3>
                 <p className="font-body-sm text-xs text-[#414844] mt-1 max-w-sm mx-auto">
-                  Votre intention de don pour <strong>{categories.find((c) => c.id === category)?.label}</strong>{category !== 'materiel' ? ` (${amount})` : ''} a bien été transmise. Il ne s'agit pas d'une confirmation de paiement. Le secrétariat humanitaire de Nagréogo prendra attache avec vous sur {contact}.
+                  {donation.successMessage?.replace('{category}', categories.find((c) => c.value === category)?.label || '').replace('{amount}', category !== 'materiel' ? `(${amount})` : '').replace('{contact}', contact)}
                 </p>
               </div>
 

@@ -1,5 +1,7 @@
 import React from 'react';
 import { TabType } from '../types';
+import { useContent } from '../features/content/ContentContext';
+import { SiteNavigationContent } from '../services/contentApi';
 
 interface BottomNavProps {
   currentTab: TabType;
@@ -7,13 +9,9 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onTabChange }) => {
-  const navItems: { tab: TabType; label: string; icon: string }[] = [
-    { tab: 'accueil', label: 'Accueil', icon: 'home' },
-    { tab: 'agriculture', label: 'Agriculture', icon: 'eco' },
-    { tab: 'elevage', label: 'Élevage', icon: 'cruelty_free' },
-    { tab: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' },
-    { tab: 'admin', label: 'Admin', icon: 'admin_panel_settings' },
-  ];
+  const { get } = useContent(); const navigation = get<SiteNavigationContent>('site.navigation');
+  const icons = { accueil: 'home', agriculture: 'eco', elevage: 'cruelty_free', humanitaire: 'volunteer_activism' } as const;
+  const navItems = (navigation.items || []).map((item) => ({ tab: item.id as TabType, label: item.label, icon: icons[item.id] }));
 
   return (
     <nav className="md:hidden fixed bottom-0 w-full z-40 pb-safe bg-[#f3fbf5]/95 backdrop-blur-xl shadow-[0_-2px_12px_rgba(27,67,50,0.08)] border-t border-[#e2eae4]">
@@ -52,4 +50,3 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onTabChange })
     </nav>
   );
 };
-

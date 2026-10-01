@@ -19,6 +19,7 @@ export interface VideoItem {
   sector: 'agriculture' | 'elevage' | 'humanitaire';
   stats?: string;
   statsIcon?: string;
+  description?: string;
 }
 
 export interface ArticleItem {
