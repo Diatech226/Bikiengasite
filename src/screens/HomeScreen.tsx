@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useContent } from '../features/content/ContentContext';
 import { ArticleItem, VideoItem } from '../types';
+import { HomePageContent } from '../services/contentApi';
 
 interface HomeScreenProps {
   articles: ArticleItem[];
@@ -30,7 +31,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onRetryArticles,
 }) => {
   const { get, media } = useContent();
-  const page = get<any>('home.page');
+  const page = get<HomePageContent>('home.page');
   const videos = media('home');
   const [activeFilter, setActiveFilter] = useState<'all' | 'video' | 'agriculture' | 'elevage' | 'humanitaire'>('all');
 
@@ -339,22 +340,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Responsive Grid for Articles: 1 col on mobile, 3 col on md/lg */}
         {articlesLoading ? (
-          <div className="bg-white p-8 rounded-2xl border border-[#c1c8c2] text-center" role="status">Chargement des publications…</div>
+          <div className="bg-white p-8 rounded-2xl border border-[#c1c8c2] text-center" role="status">{page.articlesLoadingLabel}</div>
         ) : articlesError ? (
-          <div className="bg-white p-8 rounded-2xl border border-[#c1c8c2] text-center flex flex-col items-center gap-3" role="alert"><p>Les publications sont momentanément indisponibles.</p><button className="px-4 py-2 rounded-full bg-[#012d1d] text-white text-xs font-bold" onClick={onRetryArticles}>Réessayer</button></div>
+          <div className="bg-white p-8 rounded-2xl border border-[#c1c8c2] text-center flex flex-col items-center gap-3" role="alert"><p>{page.articlesErrorLabel}</p><button className="px-4 py-2 rounded-full bg-[#012d1d] text-white text-xs font-bold" onClick={onRetryArticles}>{page.retryLabel}</button></div>
         ) : (() => {
           const published = articles.filter((a) => (a.status || 'published') === 'published');
           if (published.length === 0) {
             return (
               <div className="bg-white p-8 rounded-2xl border border-dashed border-[#c1c8c2] text-center flex flex-col items-center justify-center gap-2">
                 <span className="material-symbols-outlined text-3xl text-[#717973]">feed</span>
-                <p className="text-sm font-bold text-[#012d1d]">Aucun article publié pour l'instant</p>
-                <p className="text-xs text-[#414844]">Accédez à la section administration pour créer ou activer des articles.</p>
+                <p className="text-sm font-bold text-[#012d1d]">{page.emptyArticlesTitle}</p>
+                <p className="text-xs text-[#414844]">{page.emptyArticlesDescription}</p>
                 <button
                   onClick={onOpenAdmin}
                   className="mt-2 px-4 py-2 rounded-full bg-[#012d1d] text-white text-xs font-bold hover:bg-[#1b4332]"
                 >
-                  Rédiger un article
+                  {page.emptyArticlesButton}
                 </button>
               </div>
             );
@@ -379,7 +380,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       {art.isFeatured && (
                         <span className="absolute top-2 left-2 bg-[#7d562d] text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-xs">
                           <span className="material-symbols-outlined text-[12px]">star</span>
-                          À la une
+                          {page.featuredLabel}
                         </span>
                       )}
                     </div>
@@ -402,7 +403,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <div className="pt-3 mt-3 border-t border-[#dce5de] flex items-center justify-between text-xs font-semibold text-[#012d1d]">
                     <span className="text-[#7d562d] truncate max-w-[140px]">{art.category}</span>
                     <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform flex-shrink-0">
-                      Lire l'enseignement
+                      {page.articleReadLabel}
                       <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                     </span>
                   </div>
@@ -423,14 +424,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ffca98] animate-pulse" />
               <span className="font-label-sm text-xs uppercase tracking-wider text-[#ffdcbd] font-bold">
-                Partenariat & Fraternité Sahélienne
+                {page.upcomingEyebrow}
               </span>
             </div>
             <h3 className="font-headline-md text-xl md:text-2xl lg:text-3xl leading-tight text-white font-bold">
               {page.upcomingTitle}
             </h3>
             <p className="font-body-sm text-xs md:text-sm text-[#c1ecd4] leading-relaxed">
-              Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins. Chaque geste enracine l'espoir et l'autonomie sur notre terre ancestrale.
+              {page.upcomingDescription}
             </p>
           </div>
 
@@ -439,13 +440,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               onClick={onOpenDonation}
               className="px-6 py-3 rounded-full bg-[#ffca98] text-[#7a532a] font-label-md text-sm font-bold shadow-sm hover:bg-[#f0bd8b] transition-all text-center active:scale-95"
             >
-              Soutenir une action
+              {page.upcomingPrimaryButton}
             </button>
             <button
               onClick={onOpenDonation}
               className="px-6 py-3 rounded-full bg-white/10 text-white font-label-md text-sm font-semibold hover:bg-white/20 transition-colors text-center border border-white/20"
             >
-              Nous contacter
+              {page.upcomingSecondaryButton}
             </button>
           </div>
         </div>

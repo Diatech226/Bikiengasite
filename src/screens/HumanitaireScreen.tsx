@@ -45,8 +45,8 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
     if (navigator.share) {
       navigator
         .share({
-          title: 'Actions Humanitaires - Cheick Bikienga',
-          text: 'Découvrez les forages, greniers et écoles de solidarité à Nagréogo.',
+          title: page.shareTitle,
+          text: page.shareDescription,
           url: window.location.href,
         })
         .catch(() => {});
@@ -63,7 +63,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
     e.preventDefault(); if (!contactName.trim() || formLoading) return; setFormLoading(true); setFormError('');
     const types: Record<string, ContactType> = { forage: 'FORAGE', scolaire: 'DONATION', vivres: 'FOOD_SUPPORT', benevole: 'VOLUNTEERING' };
     try { await contactApi.create({ name: contactName.trim(), phone: contactPhone.trim(), type: types[contactType] || 'GENERAL', message: contactMessage.trim() || undefined }); setFormFeedback(true); setContactName(''); setContactPhone(''); setContactMessage(''); }
-    catch (error) { setFormError(error instanceof Error ? error.message : 'Envoi impossible.'); }
+    catch (error) { setFormError(error instanceof Error ? error.message : page.contactErrorMessage); }
     finally { setFormLoading(false); }
   };
 
@@ -217,7 +217,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                       alt: story.alt,
                       summary: story.description,
                       fullText: `${story.description}\n\n${story.expandedNarrative}\n\n${story.impactBox}`,
-                      actionText: 'Lire le récit',
+                      actionText: page.reportageActionLabel,
                       sector: 'humanitaire',
                       stats: story.statusText,
                     })
@@ -304,7 +304,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                           onClick={() => toggleExpand(story.id)}
                           className="inline-flex items-center gap-1 font-label-md text-label-md text-[#7d562d] hover:text-[#012d1d] transition-colors font-bold px-2 py-1"
                         >
-                          <span>{isExpanded ? 'Réduire' : 'Lire'}</span>
+                          <span>{isExpanded ? page.collapseLabel : page.readLabel}</span>
                           <span
                             className={`material-symbols-outlined text-[16px] transition-transform ${
                               isExpanded ? 'rotate-180' : ''
@@ -371,7 +371,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   className="h-12 px-4 rounded-xl bg-[#7d562d] text-white font-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-[#623f18] transition-colors active:scale-[0.98] font-bold"
                 >
                   <span className="material-symbols-outlined text-[20px]">share</span>
-                  <span>{shareFeedback ? 'Lien copié !' : page.shareButton}</span>
+                  <span>{shareFeedback ? page.shareSuccessLabel : page.shareButton}</span>
                 </button>
               </div>
 
@@ -434,7 +434,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
                   className="h-11 disabled:opacity-60 rounded-lg bg-[#ffdcbd] text-[#2c1600] font-label-lg font-bold flex items-center justify-center gap-2 hover:bg-[#ffca98] transition-colors shadow-sm"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>{formLoading ? 'Transmission…' : page.contactSubmitLabel}</span>
+                  <span>{formLoading ? page.contactLoadingLabel : page.contactSubmitLabel}</span>
                 </button>
 
                 {formError && <span role="alert" className="text-sm text-red-200 text-center font-bold">{formError}</span>}
