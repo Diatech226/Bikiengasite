@@ -44,8 +44,10 @@ export default function App() {
   const { bookmarks, toggleBookmark: handleToggleBookmark } = useBookmarks(showToast);
   const { articles, loading: articlesLoading, error: articlesError, refresh: refreshArticles } = useArticles();
 
-  if (contentStatus === 'loading') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]" role="status">Chargement du contenu…</div>;
-  if (contentStatus === 'error') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]"><div className="text-center"><p>Le contenu est momentanément indisponible.</p><button className="mt-4 px-4 py-2 rounded-full bg-[#012d1d] text-white" onClick={() => void refreshContent()}>Réessayer</button></div></div>;
+  // Scroll to top on tab change (called unconditionally before early returns)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentTab]);
 
   const handleShare = (title: string, desc: string) => {
     if (navigator.share) {
@@ -66,10 +68,9 @@ export default function App() {
     }
   };
 
-  // Scroll to top on tab change
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentTab]);
+  if (contentStatus === 'loading') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]" role="status">Chargement du contenu…</div>;
+  if (contentStatus === 'error') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]"><div className="text-center"><p>Le contenu est momentanément indisponible.</p><button className="mt-4 px-4 py-2 rounded-full bg-[#012d1d] text-white" onClick={() => void refreshContent()}>Réessayer</button></div></div>;
+
 
   return (
     <div className="min-h-screen bg-[#f8fbf9] flex flex-col text-[#151d1a] selection:bg-[#ffca98] selection:text-[#7a532a]">
