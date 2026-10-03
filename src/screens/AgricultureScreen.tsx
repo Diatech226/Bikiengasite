@@ -19,10 +19,10 @@ export const AgricultureScreen: React.FC<AgricultureScreenProps> = ({
 }) => {
   const { get, media } = useContent();
   const page = get<any>('agriculture.page');
-  page.videos = media('agriculture');
+  const videos = media('agriculture');
   const [activeFilter, setActiveFilter] = useState('all');
 
-  const filteredVideos = page.videos.filter((v: any) => {
+  const filteredVideos = videos.filter((v: any) => {
     if (activeFilter === 'all') return true;
     return v.category === activeFilter;
   });

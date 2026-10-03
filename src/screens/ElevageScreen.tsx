@@ -19,7 +19,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 }) => {
   const { get, media } = useContent();
   const page = get<any>('elevage.page');
-  page.videos = media('elevage');
+  const videos = media('elevage');
   const [activeFilter, setActiveFilter] = useState('all');
 
   return (
@@ -133,7 +133,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* POST VIDÉO 1 : Embouche bovine intensive */}
           {(() => {
-            const v = page.videos[0];
+            const v = videos[0];
             const isSaved = bookmarks.includes(v.id);
             return (
               <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col border border-[#c1c8c2]/40 hover:shadow-md transition-shadow">
@@ -261,7 +261,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
           {/* POST VIDÉO 2 : Campagne vaccinale solidaire */}
           {(() => {
-            const v = page.videos[1];
+            const v = videos[1];
             const isSaved = bookmarks.includes(v.id);
             return (
               <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col border border-[#c1c8c2]/40 hover:shadow-md transition-shadow">
@@ -388,7 +388,7 @@ export const ElevageScreen: React.FC<ElevageScreenProps> = ({
 
           {/* POST VIDÉO 3 : La mini-laiterie villageoise */}
           {(() => {
-            const v = page.videos[2];
+            const v = videos[2];
             const isSaved = bookmarks.includes(v.id);
             return (
               <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col border border-[#c1c8c2]/40 hover:shadow-md transition-shadow">
