@@ -7,29 +7,32 @@ export interface NavigationItem { id: 'accueil'|'agriculture'|'elevage'|'humanit
 export interface SiteBrandContent { name: string; subtitle: string; logoUrl: string; logoAlt: string }
 export interface SiteNavigationContent { items: NavigationItem[]; searchLabel: string; supportLabel: string; profileLabel: string }
 export interface SiteFooterContent { description: string; navigationTitle: string; supportTitle: string; supportDescription: string; donationButton: string; profileButton: string; copyright: string; signature: string }
+export interface SiteContactContent { location: string; email: string; phone: string; whatsapp: string }
 export interface SiteProfileContent { name: string; title: string; biography: string; quote: string; imageUrl: string; imageAlt: string; buttonLabel: string }
+export interface SiteGuideContent { badge: string; title: string; introduction: string; buttonLabel: string }
 export interface SiteDonationContent { badge: string; eyebrow: string; title: string; introduction: string; projectLabel: string; nameLabel: string; namePlaceholder: string; contactLabel: string; contactPlaceholder: string; emailLabel: string; emailPlaceholder: string; amountLabel: string; messageLabel: string; messagePlaceholder: string; submitLabel: string; successBadge: string; successTitle: string; successMessage: string; categories: LabelValue[]; suggestedAmounts: { value: number; label: string }[] }
 export interface SiteSearchContent { placeholder: string; suggestionsTitle: string; mediaTitle: string; articlesTitle: string; emptyMessage: string; suggestions: string[] }
 export interface FilterContent { id: string; label: string; icon?: string }
 export interface HeaderContent { badge: string; title: string; description: string; quote?: string; author?: string }
 export interface StatContent { value: string; label: string; sub?: string; sublabel?: string; icon?: string; color?: string; bg?: string; bgColor?: string; textColor?: string }
 export interface HomePageContent {
-  badge: string; title: string; description: string; primaryButton: string; secondaryButton: string;
+  badge: string; title: string; description: string; primaryButton: string;
   quote: string; quoteAuthor: string; quoteCaption: string; impactTitle: string; impactPeriod: string;
-  metrics: StatContent[]; filters: FilterContent[]; storiesTitle: string; articlesEyebrow: string; articlesHeading: string;
-  articlesMoreLabel: string; upcomingTitle: string; upcomingEyebrow: string; upcomingDescription: string;
-  upcomingPrimaryButton: string; upcomingSecondaryButton: string; emptyArticlesTitle: string; emptyArticlesDescription: string;
-  emptyArticlesButton: string; featuredLabel: string; articleReadLabel: string; articlesLoadingLabel: string;
+  metrics: StatContent[]; storiesTitle: string; articlesEyebrow: string; articlesHeading: string;
+  upcomingTitle: string; upcomingEyebrow: string; upcomingDescription: string;
+  upcomingPrimaryButton: string; emptyArticlesTitle: string; emptyArticlesDescription: string;
+  articlesLoadingLabel: string;
   articlesErrorLabel: string; retryLabel: string;
 }
-export interface SectionPageContent {
-  header: HeaderContent; stats: StatContent[]; filters?: FilterContent[]; [key: string]: unknown;
-}
+export interface GuideCardContent { badge: string; title: string; description: string; fileLabel: string; buttonLabel: string }
+export interface AgriculturePageContent { header: HeaderContent; stats: StatContent[]; storiesTitle: string; guideCard: GuideCardContent }
+export interface ElevagePageContent { header: HeaderContent; stats: StatContent[]; storiesTitle: string; adviceTitle: string; rules: { title: string; description: string }[]; ctaTitle: string; ctaDescription: string; donationButton: string }
+export interface HumanitairePageContent { header: HeaderContent; stats: StatContent[]; chroniclesTitle: string; chroniclesSubtitle: string; actionTitle: string; actionSubtitle: string; actionDescription: string; donationButton: string; contactButton: string }
 export interface ContentMap {
   'site.brand': SiteBrandContent; 'site.navigation': SiteNavigationContent; 'site.footer': SiteFooterContent;
-  'site.contact': Record<string,string>; 'site.profile': SiteProfileContent; 'site.guide': Record<string,unknown>;
+  'site.contact': SiteContactContent; 'site.profile': SiteProfileContent; 'site.guide': SiteGuideContent;
   'site.donation': SiteDonationContent; 'site.search': SiteSearchContent;
-  'home.page': HomePageContent; 'agriculture.page': SectionPageContent; 'elevage.page': SectionPageContent; 'humanitaire.page': SectionPageContent;
+  'home.page': HomePageContent; 'agriculture.page': AgriculturePageContent; 'elevage.page': ElevagePageContent; 'humanitaire.page': HumanitairePageContent;
 }
 export interface ContentBlock<K extends keyof ContentMap = keyof ContentMap> { id?: string; key: K; section: string; data: ContentMap[K]; updatedAt?: string }
 export interface MediaMetadata { duration?: string; category?: string; tagIcon?: string; badgeIcon?: string; statsIcon?: string; location?: string; statusText?: string; expandedNarrative?: string; impactBox?: string }
