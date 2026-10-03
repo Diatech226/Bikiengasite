@@ -76,67 +76,13 @@ export const contentApi = {
     } catch {}
     return getLocalPayload();
   },
-  admin: async (): Promise<ContentPayload> => {
-    try {
-      const result = await apiRequest<ContentPayload>('/admin/content');
-      if (result && Array.isArray(result.blocks) && result.blocks.length > 0) {
-        return result;
-      }
-    } catch {}
-    return getLocalPayload();
-  },
-  update: async <K extends keyof ContentMap>(key: K, data: ContentMap[K]): Promise<ContentBlock<K>> => {
-    try {
-      return await apiRequest<ContentBlock<K>>(`/admin/content/${encodeURIComponent(key)}`, { method: 'PATCH', body: JSON.stringify({ data }) });
-    } catch {
-      const payload = getLocalPayload();
-      const existingIdx = payload.blocks.findIndex((b) => b.key === key);
-      const section = key.split('.')[0] || 'site';
-      const updatedBlock: ContentBlock<K> = {
-        key,
-        section,
-        data,
-        updatedAt: new Date().toISOString(),
-      };
-      let newBlocks: ContentBlock[];
-      if (existingIdx >= 0) {
-        newBlocks = payload.blocks.map((b) => (b.key === key ? updatedBlock : b));
-      } else {
-        newBlocks = [...payload.blocks, updatedBlock];
-      }
-      saveLocalBlocks(newBlocks);
-      return updatedBlock;
-    }
-  },
-  createMedia: async (item: MediaItem): Promise<MediaItem> => {
-    try {
-      return await apiRequest<MediaItem>('/admin/media-items', { method: 'POST', body: JSON.stringify(item) });
-    } catch {
-      const payload = getLocalPayload();
-      const newItem: MediaItem = { ...item, id: item.id || `media-${Date.now()}` };
-      saveLocalMedia([...payload.mediaItems, newItem]);
-      return newItem;
-    }
-  },
-  updateMedia: async (id: string, item: MediaItem): Promise<MediaItem> => {
-    try {
-      return await apiRequest<MediaItem>(`/admin/media-items/${id}`, { method: 'PATCH', body: JSON.stringify(item) });
-    } catch {
-      const payload = getLocalPayload();
-      const updated = payload.mediaItems.map((m) => (m.id === id || m.slug === id ? { ...m, ...item } : m));
-      saveLocalMedia(updated);
-      return { ...item, id };
-    }
-  },
-  deleteMedia: async (id: string): Promise<{ success: boolean }> => {
-    try {
-      return await apiRequest<{ success: boolean }>(`/admin/media-items/${id}`, { method: 'DELETE' });
-    } catch {
-      const payload = getLocalPayload();
-      const filtered = payload.mediaItems.filter((m) => m.id !== id && m.slug !== id);
-      saveLocalMedia(filtered);
-      return { success: true };
-    }
-  },
+  admin: (): Promise<ContentPayload> => apiRequest<ContentPayload>('/admin/content'),
+  update: <K extends keyof ContentMap>(key: K, data: ContentMap[K]): Promise<ContentBlock<K>> =>
+    apiRequest<ContentBlock<K>>(`/admin/content/${encodeURIComponent(key)}`, { method: 'PATCH', body: JSON.stringify({ data }) }),
+  createMedia: (item: MediaItem): Promise<MediaItem> =>
+    apiRequest<MediaItem>('/admin/media-items', { method: 'POST', body: JSON.stringify(item) }),
+  updateMedia: (id: string, item: MediaItem): Promise<MediaItem> =>
+    apiRequest<MediaItem>(`/admin/media-items/${id}`, { method: 'PATCH', body: JSON.stringify(item) }),
+  deleteMedia: (id: string): Promise<{ success: boolean }> =>
+    apiRequest<{ success: boolean }>(`/admin/media-items/${id}`, { method: 'DELETE' }),
 };
-
