@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { contentApi, ContentMap, ContentStatus, MediaItem } from '../../services/contentApi';
+import { DEFAULT_CONTENT_PAYLOAD } from '../../data/defaultContent';
 import { VideoItem } from '../../types';
 
 function toVideo(item: MediaItem): VideoItem {
@@ -44,7 +45,11 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       setBlocks(Object.fromEntries(payload.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>);
       setItems(payload.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
       setStatus('loaded');
-    } catch { setStatus('error'); }
+    } catch {
+      setBlocks(Object.fromEntries(DEFAULT_CONTENT_PAYLOAD.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>);
+      setItems(DEFAULT_CONTENT_PAYLOAD.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
+      setStatus('loaded');
+    }
   }, []);
   useEffect(() => { void refresh(); }, [refresh]);
   const value = useMemo<State>(() => ({

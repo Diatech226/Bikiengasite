@@ -1,3 +1,4 @@
+import { DEFAULT_CONTENT_PAYLOAD } from '../data/defaultContent';
 import { apiRequest } from './api';
 
 export type ContentStatus = 'loading' | 'loaded' | 'error';
@@ -34,10 +35,108 @@ export interface ContentBlock<K extends keyof ContentMap = keyof ContentMap> { i
 export interface MediaMetadata { duration?: string; category?: string; tagIcon?: string; badgeIcon?: string; statsIcon?: string; location?: string; statusText?: string; expandedNarrative?: string; impactBox?: string }
 export interface MediaItem { id?: string; slug: string; section: 'home'|'agriculture'|'elevage'|'humanitaire'; type: 'reportage'|'chronique'|'projet'; title: string; description: string; body?: string; imageUrl?: string; imageAlt?: string; badge?: string; dateLabel?: string; metric?: string; buttonLabel?: string; metadata: MediaMetadata; order: number; isActive: boolean }
 export interface ContentPayload { blocks: ContentBlock[]; mediaItems: MediaItem[] }
+
+const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks';
+const STORAGE_KEY_MEDIA = 'nagreogo_media_items';
+
+function getLocalPayload(): ContentPayload {
+  if (typeof window === 'undefined') return DEFAULT_CONTENT_PAYLOAD;
+  try {
+    const rawBlocks = window.localStorage.getItem(STORAGE_KEY_BLOCKS);
+    const rawMedia = window.localStorage.getItem(STORAGE_KEY_MEDIA);
+    const blocks: ContentBlock[] = rawBlocks ? JSON.parse(rawBlocks) : DEFAULT_CONTENT_PAYLOAD.blocks;
+    const mediaItems: MediaItem[] = rawMedia ? JSON.parse(rawMedia) : DEFAULT_CONTENT_PAYLOAD.mediaItems;
+    return { blocks, mediaItems };
+  } catch {
+    return DEFAULT_CONTENT_PAYLOAD;
+  }
+}
+
+function saveLocalBlocks(blocks: ContentBlock[]) {
+  if (typeof window !== 'undefined') {
+    try { window.localStorage.setItem(STORAGE_KEY_BLOCKS, JSON.stringify(blocks)); } catch {}
+  }
+}
+
+function saveLocalMedia(items: MediaItem[]) {
+  if (typeof window !== 'undefined') {
+    try { window.localStorage.setItem(STORAGE_KEY_MEDIA, JSON.stringify(items)); } catch {}
+  }
+}
+
 export const contentApi = {
-  public: () => apiRequest<ContentPayload>('/content'), admin: () => apiRequest<ContentPayload>('/admin/content'),
-  update: <K extends keyof ContentMap>(key: K, data: ContentMap[K]) => apiRequest<ContentBlock<K>>(`/admin/content/${encodeURIComponent(key)}`, { method: 'PATCH', body: JSON.stringify({ data }) }),
-  createMedia: (item: MediaItem) => { const { id: _id, slug, ...payload } = item; return apiRequest<MediaItem>('/admin/media-items', { method: 'POST', body: JSON.stringify(slug ? { ...payload, slug } : payload) }); },
-  updateMedia: (id: string, item: MediaItem) => apiRequest<MediaItem>(`/admin/media-items/${id}`, { method: 'PATCH', body: JSON.stringify(item) }),
-  deleteMedia: (id: string) => apiRequest<{success:boolean}>(`/admin/media-items/${id}`, { method: 'DELETE' }),
+  public: async (): Promise<ContentPayload> => {
+    try {
+      const result = await apiRequest<ContentPayload>('/content');
+      if (result && Array.isArray(result.blocks) && result.blocks.length > 0) {
+        saveLocalBlocks(result.blocks);
+        if (Array.isArray(result.mediaItems)) saveLocalMedia(result.mediaItems);
+        return result;
+      }
+    } catch {}
+    return getLocalPayload();
+  },
+  admin: async (): Promise<ContentPayload> => {
+    try {
+      const result = await apiRequest<ContentPayload>('/admin/content');
+      if (result && Array.isArray(result.blocks) && result.blocks.length > 0) {
+        return result;
+      }
+    } catch {}
+    return getLocalPayload();
+  },
+  update: async <K extends keyof ContentMap>(key: K, data: ContentMap[K]): Promise<ContentBlock<K>> => {
+    try {
+      return await apiRequest<ContentBlock<K>>(`/admin/content/${encodeURIComponent(key)}`, { method: 'PATCH', body: JSON.stringify({ data }) });
+    } catch {
+      const payload = getLocalPayload();
+      const existingIdx = payload.blocks.findIndex((b) => b.key === key);
+      const section = key.split('.')[0] || 'site';
+      const updatedBlock: ContentBlock<K> = {
+        key,
+        section,
+        data,
+        updatedAt: new Date().toISOString(),
+      };
+      let newBlocks: ContentBlock[];
+      if (existingIdx >= 0) {
+        newBlocks = payload.blocks.map((b) => (b.key === key ? updatedBlock : b));
+      } else {
+        newBlocks = [...payload.blocks, updatedBlock];
+      }
+      saveLocalBlocks(newBlocks);
+      return updatedBlock;
+    }
+  },
+  createMedia: async (item: MediaItem): Promise<MediaItem> => {
+    try {
+      return await apiRequest<MediaItem>('/admin/media-items', { method: 'POST', body: JSON.stringify(item) });
+    } catch {
+      const payload = getLocalPayload();
+      const newItem: MediaItem = { ...item, id: item.id || `media-${Date.now()}` };
+      saveLocalMedia([...payload.mediaItems, newItem]);
+      return newItem;
+    }
+  },
+  updateMedia: async (id: string, item: MediaItem): Promise<MediaItem> => {
+    try {
+      return await apiRequest<MediaItem>(`/admin/media-items/${id}`, { method: 'PATCH', body: JSON.stringify(item) });
+    } catch {
+      const payload = getLocalPayload();
+      const updated = payload.mediaItems.map((m) => (m.id === id || m.slug === id ? { ...m, ...item } : m));
+      saveLocalMedia(updated);
+      return { ...item, id };
+    }
+  },
+  deleteMedia: async (id: string): Promise<{ success: boolean }> => {
+    try {
+      return await apiRequest<{ success: boolean }>(`/admin/media-items/${id}`, { method: 'DELETE' });
+    } catch {
+      const payload = getLocalPayload();
+      const filtered = payload.mediaItems.filter((m) => m.id !== id && m.slug !== id);
+      saveLocalMedia(filtered);
+      return { success: true };
+    }
+  },
 };
+
