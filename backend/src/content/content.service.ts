@@ -28,10 +28,30 @@ const requiredFields: Record<ContentKey, Record<string, 'string'|'array'|'object
   'site.guide': { title: 'string', introduction: 'string', buttonLabel: 'string' },
   'site.donation': { badge: 'string', title: 'string', introduction: 'string', categories: 'array', suggestedAmounts: 'array' },
   'site.search': { placeholder: 'string', suggestions: 'array', mediaTitle: 'string', articlesTitle: 'string' },
-  'home.page': { title: 'string', metrics: 'array', filters: 'array' },
-  'agriculture.page': { header: 'object', stats: 'array', filters: 'array' }, 'elevage.page': { header: 'object', stats: 'array' },
-  'humanitaire.page': { header: 'object', stats: 'array', contactOptions: 'array' },
+  'home.page': { title: 'string', metrics: 'array', storiesTitle: 'string' },
+  'agriculture.page': { header: 'object', stats: 'array', storiesTitle: 'string', guideCard: 'object' },
+  'elevage.page': { header: 'object', stats: 'array', storiesTitle: 'string', adviceTitle: 'string', rules: 'array' },
+  'humanitaire.page': { header: 'object', stats: 'array', chroniclesTitle: 'string', actionTitle: 'string' },
 };
+
+const allowedFields: Record<ContentKey, readonly string[]> = {
+  'site.brand': ['name', 'subtitle', 'logoUrl', 'logoAlt'],
+  'site.navigation': ['items', 'searchLabel', 'supportLabel', 'profileLabel'],
+  'site.footer': ['description', 'navigationTitle', 'supportTitle', 'supportDescription', 'donationButton', 'profileButton', 'copyright', 'signature'],
+  'site.contact': ['location', 'email', 'phone', 'whatsapp'],
+  'site.profile': ['name', 'title', 'biography', 'quote', 'imageUrl', 'imageAlt', 'buttonLabel'],
+  'site.guide': ['badge', 'title', 'introduction', 'buttonLabel'],
+  'site.donation': ['badge', 'eyebrow', 'title', 'introduction', 'projectLabel', 'nameLabel', 'namePlaceholder', 'contactLabel', 'contactPlaceholder', 'emailLabel', 'emailPlaceholder', 'amountLabel', 'messageLabel', 'messagePlaceholder', 'submitLabel', 'successBadge', 'successTitle', 'successMessage', 'categories', 'suggestedAmounts'],
+  'site.search': ['placeholder', 'suggestionsTitle', 'mediaTitle', 'articlesTitle', 'emptyMessage', 'suggestions'],
+  'home.page': ['badge', 'title', 'description', 'primaryButton', 'quote', 'quoteAuthor', 'quoteCaption', 'impactTitle', 'impactPeriod', 'metrics', 'storiesTitle', 'articlesEyebrow', 'articlesHeading', 'upcomingTitle', 'upcomingEyebrow', 'upcomingDescription', 'upcomingPrimaryButton', 'emptyArticlesTitle', 'emptyArticlesDescription', 'articlesLoadingLabel', 'articlesErrorLabel', 'retryLabel'],
+  'agriculture.page': ['header', 'stats', 'storiesTitle', 'guideCard'],
+  'elevage.page': ['header', 'stats', 'storiesTitle', 'adviceTitle', 'rules', 'ctaTitle', 'ctaDescription', 'donationButton'],
+  'humanitaire.page': ['header', 'stats', 'chroniclesTitle', 'chroniclesSubtitle', 'actionTitle', 'actionSubtitle', 'actionDescription', 'donationButton', 'contactButton'],
+};
+
+export function sanitizeForKey(key: ContentKey, data: Record<string, unknown>) {
+  return Object.fromEntries(allowedFields[key].filter((field) => field in data).map((field) => [field, data[field]]));
+}
 export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   for (const [field, expected] of Object.entries(requiredFields[key])) {
     const value = data[field];
@@ -41,10 +61,6 @@ export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   const allowedValues: Partial<Record<ContentKey, Record<string, readonly string[]>>> = {
     'site.navigation': { items: ['accueil', 'agriculture', 'elevage', 'humanitaire'] },
     'site.donation': { categories: ['forage', 'cereales', 'orphelins', 'arbres', 'materiel'] },
-    'humanitaire.page': { contactOptions: ['forage', 'scolaire', 'vivres', 'benevole'] },
-    'home.page': { filters: ['all', 'video', 'agriculture', 'elevage', 'humanitaire'] },
-    'agriculture.page': { filters: ['all', 'techniques', 'maraichage', 'arbres'] },
-    'elevage.page': { filters: ['all', 'bovins', 'ovins', 'laiterie'] },
   };
   for (const [field, allowed] of Object.entries(allowedValues[key] || {})) {
     const values = data[field] as Array<Record<string, unknown>>;
@@ -60,6 +76,9 @@ export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   }
 }
 function clean<T extends Record<string, unknown>>(document: T) { const { _id, __v, ...value } = document; return { ...value, id: String(_id) }; }
+function cleanBlock<T extends { key: ContentKey; data: Record<string, unknown> } & Record<string, unknown>>(document: T) {
+  return { ...clean(document), data: sanitizeForKey(document.key, document.data) };
+}
 
 @Injectable()
 export class ContentService {
@@ -67,13 +86,15 @@ export class ContentService {
   async publicContent(section?: string) {
     const filter = section ? { section } : {};
     const [blocks, mediaItems] = await Promise.all([this.contents.find(filter).sort({ key: 1 }).lean(), this.media.find({ ...(section ? { section } : {}), isActive: true }).sort({ section: 1, order: 1 }).lean()]);
-    return { blocks: blocks.map(clean), mediaItems: mediaItems.map(clean) };
+    return { blocks: blocks.map((block) => cleanBlock(block as never)), mediaItems: mediaItems.map(clean) };
   }
-  adminContent() { return Promise.all([this.contents.find().sort({ key: 1 }).lean(), this.media.find().sort({ section: 1, order: 1 }).lean()]).then(([blocks, mediaItems]) => ({ blocks: blocks.map(clean), mediaItems: mediaItems.map(clean) })); }
+  adminContent() { return Promise.all([this.contents.find().sort({ key: 1 }).lean(), this.media.find().sort({ section: 1, order: 1 }).lean()]).then(([blocks, mediaItems]) => ({ blocks: blocks.map((block) => cleanBlock(block as never)), mediaItems: mediaItems.map(clean) })); }
   async update(key: string, data: Record<string, unknown>, userId?: string) {
     if (!CONTENT_KEYS.includes(key as ContentKey)) throw new BadRequestException('Bloc de contenu inconnu');
-    validateData(data); validateForKey(key as ContentKey, data);
-    const result = await this.contents.findOneAndUpdate({ key }, { $set: { data, updatedBy: userId } }, { new: true, runValidators: true }).lean();
+    const contentKey = key as ContentKey;
+    const sanitized = sanitizeForKey(contentKey, data);
+    validateData(sanitized); validateForKey(contentKey, sanitized);
+    const result = await this.contents.findOneAndUpdate({ key }, { $set: { data: sanitized, updatedBy: userId } }, { new: true, runValidators: true }).lean();
     if (!result) throw new NotFoundException('Bloc introuvable. Exécutez le seed initial.');
     return clean(result);
   }

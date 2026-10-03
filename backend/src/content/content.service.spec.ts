@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { MediaItemDto } from './dto/content.dto';
-import { ContentService, validateData, validateForKey } from './content.service';
+import { ContentService, sanitizeForKey, validateData, validateForKey } from './content.service';
 
 const query = <T>(value: T) => ({ sort: jest.fn().mockReturnThis(), lean: jest.fn().mockResolvedValue(value) });
 
@@ -38,6 +38,13 @@ describe('ContentService', () => {
         { id: 'elevage', label: 'Pôle pastoral' }, { id: 'agriculture', label: 'Pôle agricole' },
       ], searchLabel: 'Chercher', supportLabel: 'Participer', profileLabel: 'Biographie',
     })).not.toThrow();
+  });
+
+  it('retire les anciens champs CMS avant exposition ou sauvegarde', () => {
+    expect(sanitizeForKey('home.page', { title: 'Accueil', filters: [], secondaryButton: 'Ancien', storiesTitle: 'Récits' }))
+      .toEqual({ title: 'Accueil', storiesTitle: 'Récits' });
+    expect(sanitizeForKey('humanitaire.page', { actionTitle: 'Agir', contactOptions: [], wellProgress: {} }))
+      .toEqual({ actionTitle: 'Agir' });
   });
 
   it('refuse les URL éditoriales non sécurisées et les structures excessives', () => {
