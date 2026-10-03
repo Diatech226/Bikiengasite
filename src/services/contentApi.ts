@@ -37,7 +37,7 @@ export interface ContentPayload { blocks: ContentBlock[]; mediaItems: MediaItem[
 export const contentApi = {
   public: () => apiRequest<ContentPayload>('/content'), admin: () => apiRequest<ContentPayload>('/admin/content'),
   update: <K extends keyof ContentMap>(key: K, data: ContentMap[K]) => apiRequest<ContentBlock<K>>(`/admin/content/${encodeURIComponent(key)}`, { method: 'PATCH', body: JSON.stringify({ data }) }),
-  createMedia: (item: MediaItem) => apiRequest<MediaItem>('/admin/media-items', { method: 'POST', body: JSON.stringify(item) }),
+  createMedia: (item: MediaItem) => { const { id: _id, slug, ...payload } = item; return apiRequest<MediaItem>('/admin/media-items', { method: 'POST', body: JSON.stringify(slug ? { ...payload, slug } : payload) }); },
   updateMedia: (id: string, item: MediaItem) => apiRequest<MediaItem>(`/admin/media-items/${id}`, { method: 'PATCH', body: JSON.stringify(item) }),
   deleteMedia: (id: string) => apiRequest<{success:boolean}>(`/admin/media-items/${id}`, { method: 'DELETE' }),
 };

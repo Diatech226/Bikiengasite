@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MediaItemDto } from './dto/content.dto';
 import { CONTENT_KEYS, ContentKey, SiteContent } from './schemas/site-content.schema';
 import { MediaItem } from './schemas/media-item.schema';
+import slugify from 'slugify';
 
 export function validateData(value: unknown, depth = 0, field = 'data'): void {
   if (depth > 8) throw new BadRequestException('Structure de contenu trop profonde');
@@ -76,7 +77,39 @@ export class ContentService {
     if (!result) throw new NotFoundException('Bloc introuvable. Exécutez le seed initial.');
     return clean(result);
   }
-  createMedia(dto: MediaItemDto, userId?: string) { return this.media.create({ ...dto, slug: dto.slug.trim().toLowerCase(), updatedBy: userId }); }
-  async updateMedia(id: string, dto: MediaItemDto, userId?: string) { const item = await this.media.findByIdAndUpdate(id, { $set: { ...dto, updatedBy: userId } }, { new: true, runValidators: true }); if (!item) throw new NotFoundException('Média introuvable'); return item; }
+  private duplicateSlug(error: unknown) {
+    return !!error && typeof error === 'object' && 'code' in error && (error as { code?: number }).code === 11000;
+  }
+  private async availableSlug(title: string) {
+    const base = slugify(title, { lower: true, strict: true, locale: 'fr', trim: true }) || 'media';
+    let candidate = base;
+    let suffix = 2;
+    while (await this.media.exists({ slug: candidate })) candidate = `${base}-${suffix++}`;
+    return candidate;
+  }
+  async createMedia(dto: MediaItemDto, userId?: string) {
+    const requestedSlug = dto.slug?.trim().toLowerCase();
+    const slug = requestedSlug || await this.availableSlug(dto.title);
+    try {
+      return await this.media.create({ ...dto, slug, updatedBy: userId });
+    } catch (error) {
+      if (this.duplicateSlug(error)) {
+        if (requestedSlug) throw new ConflictException('Un média avec cet identifiant existe déjà.');
+        // A concurrent creation may have claimed the candidate after the lookup.
+        const retrySlug = await this.availableSlug(dto.title);
+        try { return await this.media.create({ ...dto, slug: retrySlug, updatedBy: userId }); }
+        catch (retryError) { if (this.duplicateSlug(retryError)) throw new ConflictException('Un média avec cet identifiant existe déjà.'); throw retryError; }
+      }
+      throw error;
+    }
+  }
+  async updateMedia(id: string, dto: MediaItemDto, userId?: string) {
+    const { slug: _ignoredSlug, ...changes } = dto;
+    try {
+      const item = await this.media.findByIdAndUpdate(id, { $set: { ...changes, updatedBy: userId } }, { new: true, runValidators: true });
+      if (!item) throw new NotFoundException('Média introuvable');
+      return item;
+    } catch (error) { if (this.duplicateSlug(error)) throw new ConflictException('Un média avec cet identifiant existe déjà.'); throw error; }
+  }
   async deleteMedia(id: string) { const item = await this.media.findByIdAndDelete(id); if (!item) throw new NotFoundException('Média introuvable'); return { success: true }; }
 }

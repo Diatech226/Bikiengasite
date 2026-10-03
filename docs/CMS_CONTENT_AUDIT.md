@@ -27,3 +27,10 @@ MongoDB est la source de vérité en exploitation. `content.defaults.ts` ne sert
 ## Reliquats identifiés
 
 Quelques micro-libellés d'interface purement fonctionnels restent codés dans les composants (fermeture, partage, enregistrement, réglage de lecture, chargement technique et administration). Ils ne décrivent ni l'activité ni les projets et sont volontairement traités comme du vocabulaire produit, pas comme du contenu éditorial. Les contenus des articles restent administrés par le module Articles existant, et les dons/demandes de contact restent dans leurs modules métier dédiés.
+## Audit de stabilisation du CMS (octobre 2026)
+
+Le nouvel audit des écrans publics confirme que les textes métier structurants sont fournis par les blocs `site.*` et `*.page`, tandis que les reportages, chroniques et projets proviennent des médias du CMS. Les écrans Agriculture, Élevage et Humanitaire dérivent maintenant leurs listes de médias sans modifier les objets fournis par `ContentContext`.
+
+Les chaînes qui restent volontairement dans les composants sont des libellés fonctionnels d’interface (par exemple « Fermer », « Partager », « Charger », « Réessayer » et « Administration »), des messages de validation/erreur, ou des attributs d’accessibilité. Elles ne constituent pas du contenu éditorial métier. Les données initiales de démonstration restent dans `backend/src/database/content.defaults.ts` et sont insérées uniquement à l’initialisation ; elles deviennent ensuite modifiables dans le CMS sans être écrasées par le seed.
+
+La gestion des médias dispose désormais d’une liste distincte, de filtres, d’un formulaire dédié et d’un champ image isolé. Ce dernier constitue le point de remplacement prévu pour un futur upload ou une médiathèque, sans introduire de stockage de fichiers à ce stade.

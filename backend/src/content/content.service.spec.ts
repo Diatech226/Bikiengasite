@@ -1,4 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { MediaItemDto } from './dto/content.dto';
 import { ContentService, validateData, validateForKey } from './content.service';
 
 const query = <T>(value: T) => ({ sort: jest.fn().mockReturnThis(), lean: jest.fn().mockResolvedValue(value) });
@@ -49,5 +52,36 @@ describe('ContentService', () => {
     expect(contents.findOneAndUpdate).toHaveBeenCalledWith(
       { key: 'site.contact' }, expect.anything(), expect.objectContaining({ new: true, runValidators: true }),
     );
+  });
+
+  it('génère un slug normalisé et incrémente les collisions', async () => {
+    const media = {
+      exists: jest.fn().mockResolvedValueOnce({ _id: 'existing' }).mockResolvedValueOnce(null),
+      create: jest.fn(async (value) => value),
+    };
+    const service = new ContentService({} as never, media as never);
+    const result = await service.createMedia({ title: ' Construction du forage de Nagréogo ', description: 'Un projet', section: 'humanitaire', type: 'projet', metadata: {}, order: 0, isActive: true });
+    expect(result).toMatchObject({ slug: 'construction-du-forage-de-nagreogo-2' });
+  });
+
+  it('conserve le slug existant lors de la modification du titre', async () => {
+    const media = { findByIdAndUpdate: jest.fn().mockResolvedValue({ slug: 'slug-stable' }) };
+    const service = new ContentService({} as never, media as never);
+    await service.updateMedia('media-id', { slug: 'slug-modifie', title: 'Nouveau titre', description: 'Description', section: 'home', type: 'reportage', metadata: {}, order: 1, isActive: true });
+    expect(media.findByIdAndUpdate.mock.calls[0][1].$set).not.toHaveProperty('slug');
+  });
+
+  it('traduit une collision MongoDB en erreur API lisible', async () => {
+    const media = { create: jest.fn().mockRejectedValue(Object.assign(new Error('E11000'), { code: 11000 })) };
+    const service = new ContentService({} as never, media as never);
+    await expect(service.createMedia({ slug: 'existant', title: 'Titre valide', description: 'Description', section: 'home', type: 'reportage', metadata: {}, order: 0, isActive: true })).rejects.toMatchObject({ message: 'Un média avec cet identifiant existe déjà.' });
+  });
+
+  it('valide strictement URL, section, type, ordre et longueurs des médias', async () => {
+    const valid = { title: ' Titre valide ', description: ' Description ', section: 'home', type: 'reportage', imageUrl: 'https://example.com/image.jpg', metadata: {}, order: 0, isActive: true };
+    expect(await validate(plainToInstance(MediaItemDto, valid))).toHaveLength(0);
+    const invalid = plainToInstance(MediaItemDto, { ...valid, section: 'secret', type: 'video', imageUrl: 'ftp://example.com/a.jpg', order: -1, title: 'x'.repeat(181) });
+    const properties = (await validate(invalid)).map((error) => error.property);
+    expect(properties).toEqual(expect.arrayContaining(['section', 'type', 'imageUrl', 'order', 'title']));
   });
 });

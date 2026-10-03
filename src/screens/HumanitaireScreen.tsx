@@ -22,7 +22,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
 }) => {
   const { get, media } = useContent();
   const page = get<any>('humanitaire.page');
-  page.chronicles = media('humanitaire');
+  const chronicles = media('humanitaire');
   const [expandedArticles, setExpandedArticles] = useState<Record<string, boolean>>({});
   const [showQuickForm, setShowQuickForm] = useState(false);
   const [contactName, setContactName] = useState('');
@@ -191,7 +191,7 @@ export const HumanitaireScreen: React.FC<HumanitaireScreenProps> = ({
 
         {/* Stories Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {page.chronicles.map((story: any) => {
+          {chronicles.map((story: any) => {
             const isExpanded = !!expandedArticles[story.id];
             const isSaved = bookmarks.includes(story.id);
 
