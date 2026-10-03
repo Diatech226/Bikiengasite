@@ -102,104 +102,21 @@ export const articleApi = {
       } catch {}
       return getLocalArticles().filter((a) => a.isFeatured && (a.status || 'published') === 'published');
     },
-    view: async (id: string) => {
-      try {
-        return await apiRequest<{ counted: boolean }>(`/articles/${id}/view`, { method: 'POST' });
-      } catch {
-        const articles = getLocalArticles();
-        const updated = articles.map((a) => (a.id === id ? { ...a, viewsCount: (a.viewsCount || 0) + 1 } : a));
-        saveLocalArticles(updated);
-        return { counted: true };
-      }
-    },
+    view: (id: string) => apiRequest<{ counted: boolean }>(`/articles/${id}/view`, { method: 'POST' }),
   },
   admin: {
     async list(signal?: AbortSignal) {
-      try {
-        const result = await apiRequest<{ data: ApiArticle[] }>('/admin/articles?limit=100', { signal });
-        if (result && Array.isArray(result.data)) {
-          return result.data.map(mapArticle);
-        }
-      } catch {}
-      return getLocalArticles();
+      const result = await apiRequest<{ data: ApiArticle[] }>('/admin/articles?limit=100', { signal });
+      return result.data.map(mapArticle);
     },
     async create(article: ArticlePayload) {
-      try {
-        return mapArticle(await apiRequest<ApiArticle>('/admin/articles', { method: 'POST', body: JSON.stringify(await toApiPayload(article)) }));
-      } catch {
-        const articles = getLocalArticles();
-        const newArticle: ArticleItem = {
-          ...article,
-          id: `article-${Date.now()}`,
-          date: new Date().toLocaleDateString('fr-FR'),
-          viewsCount: 0,
-          updatedAt: new Date().toISOString(),
-        };
-        saveLocalArticles([newArticle, ...articles]);
-        return newArticle;
-      }
+      return mapArticle(await apiRequest<ApiArticle>('/admin/articles', { method: 'POST', body: JSON.stringify(await toApiPayload(article)) }));
     },
     async update(id: string, article: Partial<ArticlePayload>) {
-      try {
-        return mapArticle(await apiRequest<ApiArticle>(`/admin/articles/${id}`, { method: 'PATCH', body: JSON.stringify(await toApiPayload(article)) }));
-      } catch {
-        const articles = getLocalArticles();
-        let updatedArticle: ArticleItem | undefined;
-        const updated = articles.map((a) => {
-          if (a.id === id || a.slug === id) {
-            updatedArticle = { ...a, ...article, updatedAt: new Date().toISOString() };
-            return updatedArticle;
-          }
-          return a;
-        });
-        saveLocalArticles(updated);
-        return updatedArticle || ({ id, ...article } as ArticleItem);
-      }
+      return mapArticle(await apiRequest<ApiArticle>(`/admin/articles/${id}`, { method: 'PATCH', body: JSON.stringify(await toApiPayload(article)) }));
     },
-    remove: async (id: string) => {
-      try {
-        return await apiRequest<{ success: boolean }>(`/admin/articles/${id}`, { method: 'DELETE' });
-      } catch {
-        const articles = getLocalArticles();
-        const filtered = articles.filter((a) => a.id !== id && a.slug !== id);
-        saveLocalArticles(filtered);
-        return { success: true };
-      }
-    },
-    status: async (id: string, status: 'published' | 'draft') => {
-      try {
-        return await apiRequest<ApiArticle>(`/admin/articles/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: status === 'published' ? 'PUBLISHED' : 'DRAFT' }) });
-      } catch {
-        const articles = getLocalArticles();
-        let target: ArticleItem | undefined;
-        const updated = articles.map((a) => {
-          if (a.id === id || a.slug === id) {
-            target = { ...a, status, updatedAt: new Date().toISOString() };
-            return target;
-          }
-          return a;
-        });
-        saveLocalArticles(updated);
-        return target as unknown as ApiArticle;
-      }
-    },
-    featured: async (id: string, isFeatured: boolean) => {
-      try {
-        return await apiRequest<ApiArticle>(`/admin/articles/${id}/featured`, { method: 'PATCH', body: JSON.stringify({ isFeatured }) });
-      } catch {
-        const articles = getLocalArticles();
-        let target: ArticleItem | undefined;
-        const updated = articles.map((a) => {
-          if (a.id === id || a.slug === id) {
-            target = { ...a, isFeatured, updatedAt: new Date().toISOString() };
-            return target;
-          }
-          return a;
-        });
-        saveLocalArticles(updated);
-        return target as unknown as ApiArticle;
-      }
-    },
-  },
-};
+    remove: (id: string) => apiRequest<{ success: boolean }>(`/admin/articles/${id}`, { method: 'DELETE' }),
+    status: (id: string, status: 'published' | 'draft') => apiRequest<ApiArticle>(`/admin/articles/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: status === 'published' ? 'PUBLISHED' : 'DRAFT' }) }),
+    featured: (id: string, isFeatured: boolean) => apiRequest<ApiArticle>(`/admin/articles/${id}/featured`, { method: 'PATCH', body: JSON.stringify({ isFeatured }) }),
+  },};
 
