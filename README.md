@@ -6,41 +6,24 @@ Application React/Vite servie séparément d'une API NestJS, avec MongoDB/Mongoo
 
 ### Prérequis
 
-- **Node.js 22.14.0 LTS exactement** ; `nvm use` lit la version fixée dans `.nvmrc` ;
+- **Node.js 22.14.0 LTS** (la branche supportée est `>=22.12.0 <23`) ; `nvm use` lit la version fixée dans `.nvmrc` ;
 - **npm 10.9.2** (déclaré par `packageManager`) ;
 - Docker/Compose pour MongoDB local, ou une instance MongoDB compatible accessible par URI.
 
-Les versions majeures sont volontairement bornées et les dépendances directes sont fixées précisément. N'utilisez ni `--force` ni `--legacy-peer-deps`. Les fichiers `.npmrc` limitent le nombre de tentatives et le délai réseau (120 secondes par requête) afin qu'une registry, un proxy ou un DNS indisponible échoue clairement au lieu de donner l'impression que l'installation est bloquée.
-
-### Important : `npm install` n’est pas un script
-
-`npm install` et `npm ci` sont des **commandes intégrées à npm** : il est normal qu’aucun script `install` n’apparaisse dans `package.json`. N’exécutez pas `npm run install` (cela cherche un script utilisateur qui n’existe pas). Pour éviter toute ambiguïté, le dépôt expose aussi `npm run setup`, qui exécute simplement l’installation reproductible `npm ci`.
-
-Si npm affiche `EBADENGINE`, installez et activez d’abord les versions exactes. Avec nvm :
-
-```bash
-nvm install 22.14.0
-nvm use 22.14.0
-npm install --global npm@10.9.2
-node --version              # doit afficher v22.14.0
-npm --version               # doit afficher 10.9.2
-```
-
-Sous nvm-windows, indiquez explicitement `22.14.0` : contrairement à nvm sous Linux/macOS, certaines versions de nvm-windows ne lisent pas automatiquement `.nvmrc`.
+Les versions majeures sont volontairement bornées et les dépendances directes sont fixées précisément. N'utilisez ni `--force` ni `--legacy-peer-deps`. Les fichiers `.npmrc` limitent les nouvelles tentatives et le délai réseau afin qu'une registry, un proxy ou un DNS indisponible échoue clairement au lieu de donner l'impression que l'installation est bloquée.
 
 ### Frontend
 
-Après le clonage, depuis la racine :
-
 ```bash
-npm ci                      # recommandé, utilise exactement package-lock.json
-# ou : npm run setup
+nvm install                 # une seule fois ; installe la version de .nvmrc
+nvm use
+cp .env.example .env
+npm ci
+npm run lint
 npm run dev                 # http://localhost:3000
 ```
 
-`npm install` fonctionne également, mais il est destiné à modifier les dépendances et peut mettre à jour le lockfile. Pour une installation identique à la CI, utilisez `npm ci`.
-
-En développement, le frontend utilise `http://localhost:5000/api/v1` si aucun fichier `.env` n'existe : la commande `npm run dev` fonctionne donc sans configuration supplémentaire. Pour un build de production, `VITE_API_URL` est obligatoire et Vite affiche une erreur explicite si elle manque. La copie de `.env.example` permet de personnaliser cette URL. Toute variable `VITE_*` est publique dans le bundle : n'y placez jamais une URI MongoDB, un secret JWT ou un mot de passe.
+Le frontend requiert uniquement `VITE_API_URL` (par défaut `http://localhost:5000/api/v1`). Toute variable `VITE_*` est publique dans le bundle : n'y placez jamais une URI MongoDB, un secret JWT ou un mot de passe.
 
 ### Backend et base locale
 
@@ -48,24 +31,15 @@ En développement, le frontend utilise `http://localhost:5000/api/v1` si aucun f
 cp backend/.env.example backend/.env
 docker compose up -d mongo
 cd backend
-npm ci                      # ou : npm run setup
+npm ci
 npm run lint
 npm run seed                # explicite et idempotent
 npm run dev                 # http://localhost:5000
 ```
 
-Variables backend obligatoires : `MONGODB_URI`, `FRONTEND_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` et `VIEW_HASH_SECRET`. `PORT`, `NODE_ENV`, `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN` et `ENABLE_SWAGGER` ont des valeurs par défaut. Les variables `ADMIN_*` ne sont nécessaires que pour `npm run seed`. Générez **trois valeurs distinctes** pour les secrets avec trois exécutions de `openssl rand -hex 32`.
+Variables backend nécessaires : `MONGODB_URI`, `FRONTEND_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN`, `VIEW_HASH_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_FIRST_NAME` et `ADMIN_LAST_NAME`. `PORT`, `NODE_ENV` et `ENABLE_SWAGGER` disposent de valeurs adaptées dans l'exemple. Générez **trois valeurs distinctes** pour les secrets avec trois exécutions de `openssl rand -hex 32`.
 
 Le seed crée l'administrateur seulement s'il n'existe pas et ne réinitialise jamais silencieusement son mot de passe. Pour le changer, utilisez une procédure administrative explicite (ou supprimez volontairement le compte avant un nouveau seed).
-
-Le backend refuse volontairement de démarrer sans `backend/.env` valide. La validation NestJS nomme les variables absentes dès le démarrage, au lieu d'utiliser silencieusement des secrets ou une base par défaut. Sous **PowerShell**, préparez les fichiers avec :
-
-```powershell
-Copy-Item .env.example .env
-Copy-Item backend/.env.example backend/.env
-```
-
-Ensuite, un développeur Windows peut exécuter `npm ci; npm run dev` à la racine, puis `cd backend; npm ci; npm run dev` dans un second terminal. MongoDB doit être accessible à l'URI indiquée ; `docker compose up -d mongo` fournit l'instance locale documentée.
 
 ### Nettoyer une installation corrompue
 
@@ -81,7 +55,7 @@ npm cache verify
 npm ci
 ```
 
-Conservez les deux `package-lock.json` versionnés. Ne les supprimez pas et ne remplacez pas `npm ci` par `npm install` dans l'intégration continue. Si une installation échoue sur un téléchargement, vérifiez d'abord `npm config get registry`, le proxy et l'accès à `https://registry.npmjs.org/` ; le délai configuré est de 120 secondes par requête, avec seulement deux nouvelles tentatives.
+Conservez les deux `package-lock.json` versionnés. Ne les supprimez pas et ne remplacez pas `npm ci` par `npm install` dans l'intégration continue. Si une installation échoue sur un téléchargement, vérifiez d'abord `npm config get registry`, le proxy et l'accès à `https://registry.npmjs.org/` ; le délai configuré est de 60 secondes.
 
 ## Builds, tests et Docker
 
