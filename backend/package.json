@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "setup": "npm ci",
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "nest start",
