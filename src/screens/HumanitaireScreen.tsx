@@ -1,3 +1,19 @@
-import React from 'react';import{useContent}from'../features/content/ContentContext';import{ArticleItem,VideoItem}from'../types';
-interface Props{onOpenVideo:(v:VideoItem)=>void;onOpenArticle:(a:ArticleItem)=>void;onOpenDonation:()=>void;bookmarks:string[];onToggleBookmark:(id:string,title:string)=>void;onShare:(title:string,desc:string)=>void}
-export const HumanitaireScreen:React.FC<Props>=({onOpenVideo,onOpenDonation,onShare})=>{const{get,media}=useContent();const p=get<any>('humanitaire.page');return <div className="public-page"><section className="public-hero"><p className="eyebrow">{p.header.badge}</p><h1>{p.header.title}</h1><p>{p.header.description}</p></section><section><div className="metric-line">{p.stats.slice(0,3).map((s:any,i:number)=><div key={i}><strong>{s.value}</strong><span>{s.label}</span></div>)}</div></section><section><div className="section-heading"><div><h2>{p.chroniclesTitle}</h2><p>{p.chroniclesSubtitle}</p></div></div><div className="editorial-grid">{media('humanitaire').map((v:VideoItem)=><article className="editorial-item" key={v.id} onClick={()=>onOpenVideo(v)}><img src={v.image} alt={v.alt}/><p className="eyebrow">{v.tagLabel}</p><h3>{v.title}</h3><p>{v.summary}</p></article>)}</div></section><section className="final-cta"><div><p className="eyebrow">{p.actionSubtitle}</p><h2>{p.actionTitle}</h2><p>{p.actionDescription}</p></div><div className="simple-actions"><button className="primary-action" onClick={onOpenDonation}>{p.donationButton}</button><button className="text-action" onClick={()=>onShare(p.shareTitle,p.shareDescription)}>{p.shareButton}</button></div></section></div>};
+import React from 'react';
+import { useContent } from '../features/content/ContentContext';
+import { HumanitairePageContent, SiteContactContent } from '../services/contentApi';
+import { VideoItem } from '../types';
+
+interface Props { onOpenVideo: (video: VideoItem) => void; onOpenDonation: () => void }
+
+export const HumanitaireScreen: React.FC<Props> = ({ onOpenVideo, onOpenDonation }) => {
+  const { get, media } = useContent();
+  const page = get<HumanitairePageContent>('humanitaire.page');
+  const contact = get<SiteContactContent>('site.contact');
+  const stories = media('humanitaire') as VideoItem[];
+  return <div className="public-page">
+    <section className="public-hero"><p className="eyebrow">{page.header.badge}</p><h1>{page.header.title}</h1><p>{page.header.description}</p></section>
+    <section aria-label="Chiffres clés"><div className="metric-line">{page.stats.slice(0, 3).map((stat) => <div key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div></section>
+    <section><div className="section-heading"><div><h2>{page.chroniclesTitle}</h2><p>{page.chroniclesSubtitle}</p></div></div><div className="editorial-grid">{stories.map((story) => <button type="button" className="editorial-item" key={story.id} onClick={() => onOpenVideo(story)}><img src={story.image} alt={story.alt}/><span className="eyebrow">{story.tagLabel}</span><strong>{story.title}</strong><p>{story.summary}</p></button>)}</div></section>
+    <section className="final-cta"><div><p className="eyebrow">{page.actionSubtitle}</p><h2>{page.actionTitle}</h2><p>{page.actionDescription}</p><p className="contact-line"><span>{contact.location}</span>{contact.email && <> · <a href={`mailto:${contact.email}`}>{contact.email}</a></>}{contact.phone && <> · <a href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a></>}</p></div><div className="simple-actions"><button className="primary-action" onClick={onOpenDonation}>{page.donationButton}</button>{contact.email && <a className="text-action" href={`mailto:${contact.email}`}>{page.contactButton}</a>}</div></section>
+  </div>;
+};

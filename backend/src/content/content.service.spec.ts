@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { MediaItemDto } from './dto/content.dto';
-import { ContentService, validateData, validateForKey } from './content.service';
+import { ContentService, sanitizeForKey, validateData, validateForKey } from './content.service';
 
 const query = <T>(value: T) => ({ sort: jest.fn().mockReturnThis(), lean: jest.fn().mockResolvedValue(value) });
 
@@ -38,6 +38,27 @@ describe('ContentService', () => {
         { id: 'elevage', label: 'Pôle pastoral' }, { id: 'agriculture', label: 'Pôle agricole' },
       ], searchLabel: 'Chercher', supportLabel: 'Participer', profileLabel: 'Biographie',
     })).not.toThrow();
+  });
+
+  it('retire les anciens champs CMS avant exposition ou sauvegarde', () => {
+    expect(sanitizeForKey('home.page', { title: 'Accueil', filters: [], secondaryButton: 'Ancien', storiesTitle: 'Récits' }))
+      .toEqual({ title: 'Accueil', storiesTitle: 'Récits' });
+    expect(sanitizeForKey('humanitaire.page', { actionTitle: 'Agir', contactOptions: [], wellProgress: {} }))
+      .toEqual({ actionTitle: 'Agir', contactButton: 'Contacter le secrétariat' });
+  });
+
+  it('normalise les documents MongoDB créés avec l’ancien modèle sans perdre leur texte', () => {
+    expect(sanitizeForKey('elevage.page', {
+      header: { badge: 'Élevage', title: 'Troupeaux', description: 'Présentation', quote: 'Ancienne citation' },
+      stats: [{ value: '10', label: 'Éleveurs', icon: 'pets' }],
+      rules: [{ title: 'Abreuvement', desc: 'Donner une eau fraîche', icon: 'water' }],
+    })).toEqual(expect.objectContaining({
+      storiesTitle: 'Pratiques et réalisations',
+      adviceTitle: 'Conseils essentiels',
+      header: { badge: 'Élevage', title: 'Troupeaux', description: 'Présentation' },
+      stats: [{ value: '10', label: 'Éleveurs' }],
+      rules: [{ title: 'Abreuvement', description: 'Donner une eau fraîche' }],
+    }));
   });
 
   it('refuse les URL éditoriales non sécurisées et les structures excessives', () => {
