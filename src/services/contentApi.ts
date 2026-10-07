@@ -39,8 +39,9 @@ export interface MediaMetadata { duration?: string; category?: string; tagIcon?:
 export interface MediaItem { id?: string; slug: string; section: 'home'|'agriculture'|'elevage'|'humanitaire'; type: 'reportage'|'chronique'|'projet'; title: string; description: string; body?: string; imageUrl?: string; imageAlt?: string; badge?: string; dateLabel?: string; metric?: string; buttonLabel?: string; metadata: MediaMetadata; order: number; isActive: boolean }
 export interface ContentPayload { blocks: ContentBlock[]; mediaItems: MediaItem[] }
 
-const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks';
-const STORAGE_KEY_MEDIA = 'nagreogo_media_items';
+// Versioned public cache: older CMS shapes must not be replayed after a deployment.
+const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks_v2';
+const STORAGE_KEY_MEDIA = 'nagreogo_media_items_v2';
 
 function getLocalPayload(): ContentPayload {
   if (typeof window === 'undefined') return DEFAULT_CONTENT_PAYLOAD;
