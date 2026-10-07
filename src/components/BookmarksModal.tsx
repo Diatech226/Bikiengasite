@@ -27,7 +27,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        role="dialog" aria-modal="true" aria-label="Éléments enregistrés" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
+        role="dialog" aria-modal="true" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

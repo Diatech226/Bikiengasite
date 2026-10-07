@@ -1,15 +1,16 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
 import {defineConfig} from 'vite';
 
-export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
-    build: { sourcemap: false },
+    define: {
+      'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl),
+    },
+    build: {sourcemap: false},
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src'),
+        '@': new URL('./src', import.meta.url).pathname,
       },
     },
     server: {
