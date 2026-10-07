@@ -13,9 +13,8 @@ import {defineConfig} from 'vite';
         '@': new URL('./src', import.meta.url).pathname,
       },
     },
-    server: {
-      hmr: process.env.DISABLE_HMR !== 'true',
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
-    },
-  };
+  },
+  server: {
+    hmr: process.env.DISABLE_HMR !== 'true',
+  },
 });
