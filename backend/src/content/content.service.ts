@@ -49,41 +49,8 @@ const allowedFields: Record<ContentKey, readonly string[]> = {
   'humanitaire.page': ['header', 'stats', 'chroniclesTitle', 'chroniclesSubtitle', 'actionTitle', 'actionSubtitle', 'actionDescription', 'donationButton', 'contactButton'],
 };
 
-const addedFieldDefaults: Partial<Record<ContentKey, Record<string, unknown>>> = {
-  'agriculture.page': { storiesTitle: 'Réalisations et reportages' },
-  'elevage.page': { storiesTitle: 'Pratiques et réalisations', adviceTitle: 'Conseils essentiels' },
-  'humanitaire.page': { contactButton: 'Contacter le secrétariat' },
-};
-
-function pick(value: unknown, fields: readonly string[]) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-  const source = value as Record<string, unknown>;
-  return Object.fromEntries(fields.filter((field) => field in source).map((field) => [field, source[field]]));
-}
-
-function normalizeNestedFields(key: ContentKey, data: Record<string, unknown>) {
-  const normalized = { ...data };
-  if (key !== 'home.page' && key.endsWith('.page') && 'header' in data) {
-    normalized.header = pick(data.header, ['badge', 'title', 'description']);
-  }
-  if (key.endsWith('.page') && Array.isArray(data.stats)) {
-    normalized.stats = data.stats.slice(0, key === 'home.page' ? 4 : 3).map((stat) =>
-      pick(stat, key === 'home.page' ? ['value', 'label', 'sublabel'] : key === 'agriculture.page' ? ['value', 'label', 'sub'] : ['value', 'label']),
-    );
-  }
-  if (key === 'elevage.page' && Array.isArray(data.rules)) {
-    normalized.rules = data.rules.map((rule) => {
-      const source = rule && typeof rule === 'object' ? rule as Record<string, unknown> : {};
-      return { title: source.title, description: source.description ?? source.desc };
-    });
-  }
-  return normalized;
-}
-
 export function sanitizeForKey(key: ContentKey, data: Record<string, unknown>) {
-  const withDefaults = { ...addedFieldDefaults[key], ...data };
-  const allowed = Object.fromEntries(allowedFields[key].filter((field) => field in withDefaults).map((field) => [field, withDefaults[field]]));
-  return normalizeNestedFields(key, allowed);
+  return Object.fromEntries(allowedFields[key].filter((field) => field in data).map((field) => [field, data[field]]));
 }
 export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   for (const [field, expected] of Object.entries(requiredFields[key])) {
