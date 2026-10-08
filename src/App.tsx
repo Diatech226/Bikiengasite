@@ -24,18 +24,20 @@ import { useToast } from './hooks/useToast';
 import { useArticles } from './features/articles/hooks/useArticles';
 import { useBookmarks } from './features/bookmarks/hooks/useBookmarks';
 import { useContent } from './features/content/ContentContext';
+import { SiteBrandContent, SiteContactContent, SiteFooterContent, SiteNavigationContent } from './services/contentApi';
 
 export default function App() {
   const { get, status: contentStatus, refresh: refreshContent } = useContent();
-  const brand = get<any>('site.brand');
-  const footer = get<any>('site.footer');
-  const contact = get<any>('site.contact');
-  const navigation = get<any>('site.navigation');
+  const brand = get<SiteBrandContent>('site.brand');
+  const footer = get<SiteFooterContent>('site.footer');
+  const contact = get<SiteContactContent>('site.contact');
+  const navigation = get<SiteNavigationContent>('site.navigation');
   const [currentTab, setCurrentTab] = useState<TabType>('accueil');
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [donationContext, setDonationContext] = useState<{ category?: string; message?: string }>({});
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
@@ -94,10 +96,11 @@ export default function App() {
               onOpenVideo={(v) => setActiveVideo(v)}
               onOpenArticle={(a) => setActiveArticle(a)}
               onOpenDonation={() => setIsDonationOpen(true)}
-              onOpenAdmin={() => setCurrentTab('admin')}
-              bookmarks={bookmarks}
-              onToggleBookmark={handleToggleBookmark}
-              onShare={handleShare}
+              onParticipateProject={(project) => {
+                const category = project.sector === 'agriculture' ? 'arbres' : project.sector === 'elevage' ? 'materiel' : 'forage';
+                setDonationContext({ category, message: `Participation au chantier : ${project.title}` });
+                setIsDonationOpen(true);
+              }}
               articlesLoading={articlesLoading}
               articlesError={articlesError}
               onRetryArticles={() => void refreshArticles()}
@@ -107,31 +110,21 @@ export default function App() {
           {currentTab === 'agriculture' && (
             <AgricultureScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenArticle={(a) => setActiveArticle(a)}
               onOpenGuide={() => setIsGuideOpen(true)}
-              bookmarks={bookmarks}
-              onToggleBookmark={handleToggleBookmark}
             />
           )}
 
           {currentTab === 'elevage' && (
             <ElevageScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenArticle={(a) => setActiveArticle(a)}
               onOpenDonation={() => setIsDonationOpen(true)}
-              bookmarks={bookmarks}
-              onToggleBookmark={handleToggleBookmark}
             />
           )}
 
           {currentTab === 'humanitaire' && (
             <HumanitaireScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenArticle={(a) => setActiveArticle(a)}
               onOpenDonation={() => setIsDonationOpen(true)}
-              bookmarks={bookmarks}
-              onToggleBookmark={handleToggleBookmark}
-              onShare={handleShare}
             />
           )}
 
@@ -177,6 +170,10 @@ export default function App() {
                 <span className="material-symbols-outlined text-[16px]">location_on</span>
                 <span>{contact.location}</span>
               </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#dce5de]">
+                <a className="hover:text-white" href={`mailto:${contact.email}`}>{contact.email}</a>
+                <a className="hover:text-white" href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a>
+              </div>
             </div>
 
             {/* Col 2: Navigation rapide */}
@@ -190,7 +187,7 @@ export default function App() {
                     onClick={() => setCurrentTab('accueil')}
                     className="hover:text-white transition-colors"
                   >
-                    {navigation.items?.find((item: any) => item.id === 'accueil')?.footerLabel}
+                    {navigation.items.find((item) => item.id === 'accueil')?.footerLabel}
                   </button>
                 </li>
                 <li>
@@ -198,7 +195,7 @@ export default function App() {
                     onClick={() => setCurrentTab('agriculture')}
                     className="hover:text-white transition-colors"
                   >
-                    {navigation.items?.find((item: any) => item.id === 'agriculture')?.footerLabel}
+                    {navigation.items.find((item) => item.id === 'agriculture')?.footerLabel}
                   </button>
                 </li>
                 <li>
@@ -206,7 +203,7 @@ export default function App() {
                     onClick={() => setCurrentTab('elevage')}
                     className="hover:text-white transition-colors"
                   >
-                    {navigation.items?.find((item: any) => item.id === 'elevage')?.footerLabel}
+                    {navigation.items.find((item) => item.id === 'elevage')?.footerLabel}
                   </button>
                 </li>
                 <li>
@@ -214,7 +211,7 @@ export default function App() {
                     onClick={() => setCurrentTab('humanitaire')}
                     className="hover:text-white transition-colors"
                   >
-                    {navigation.items?.find((item: any) => item.id === 'humanitaire')?.footerLabel}
+                    {navigation.items.find((item) => item.id === 'humanitaire')?.footerLabel}
                   </button>
                 </li>
 
@@ -314,7 +311,7 @@ export default function App() {
 
         {/* Donation / Support Modal */}
         {isDonationOpen && (
-          <DonationModal onClose={() => setIsDonationOpen(false)} />
+          <DonationModal defaultCategory={donationContext.category} defaultMessage={donationContext.message} onClose={() => { setIsDonationOpen(false); setDonationContext({}); }} />
         )}
 
         {/* Search Modal */}

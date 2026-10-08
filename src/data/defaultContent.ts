@@ -1,4 +1,4 @@
-import { ContentBlock, ContentMap, ContentPayload, MediaItem } from '../services/contentApi';
+import { AgriculturePageContent, ContentBlock, ContentMap, ContentPayload, ElevagePageContent, HomePageContent, HumanitairePageContent, MediaItem, StatContent } from '../services/contentApi';
 import { ArticleItem } from '../types';
 import { Category } from '../services/categoryApi';
 
@@ -98,206 +98,86 @@ export const SITE_CONTENT: Pick<ContentMap, 'site.brand' | 'site.navigation' | '
   },
 };
 
-export const HOME_CONTENT = {
+export const HOME_CONTENT: Omit<HomePageContent, 'metrics'> = {
   badge: 'Terroir, Foi & Développement',
-  title: "L'Œuvre & les Réalisations du Cheick",
-  description: "Au service de la terre nourricière et des communautés unies de Nagréogo, au cœur du Plateau-Central burkinabè. Une vision intégrée d'autosuffisance alimentaire, d'eau potable et de fraternité solidaire.",
+  title: "L’Œuvre & les Réalisations du Cheick",
+  description: "Au service de la terre nourricière et des communautés unies de Nagréogo, une vision intégrée d’autosuffisance alimentaire, d’eau potable et de fraternité solidaire.",
   primaryButton: 'Participer aux chantiers',
-  secondaryButton: 'Lire les méditations',
   quote: '« Nourrir les âmes, cultiver la terre et tendre la main. »',
-  quoteAuthor: 'Cheick Bikienga Seydou — Guide Spirituel & Bâtisseur',
+  quoteAuthor: 'Cheick Bikienga Seydou — Guide spirituel & bâtisseur',
   quoteCaption: 'Fondateur du domaine pilote agropastoral de Nagréogo',
-  impactTitle: 'Impact Réel à Nagréogo',
-  impactPeriod: 'Bilan Consolidé 2024',
-  storiesTitle: 'Reportages et récits',
-  articlesTitle: 'Articles récents',
-  articlesEyebrow: 'Méditations & Enseignements',
-  articlesHeading: 'Derniers écrits & Paroles de sagesse',
-  articlesMoreLabel: 'Tout voir',
+  impactTitle: 'Impact à Nagréogo',
+  impactPeriod: 'Bilan consolidé 2024',
+  storiesTitle: 'Réalisations et reportages',
+  projectsTitle: 'Chantiers auxquels participer',
+  projectsDescription: 'Consultez les besoins, l’action prévue et l’état de chaque chantier publié par l’équipe.',
+  projectsEmptyLabel: 'Aucun chantier ouvert actuellement. Les prochains besoins seront publiés ici.',
+  projectActionLabel: 'Voir le chantier',
+  participateLabel: 'Participer à ce chantier',
+  articlesEyebrow: 'Méditations & enseignements',
+  articlesHeading: 'Articles récents',
   upcomingTitle: 'Participez aux prochains chantiers de Nagréogo',
-  upcomingEyebrow: 'Partenariat & Fraternité Sahélienne',
-  upcomingDescription: "Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins. Chaque geste enracine l'espoir et l'autonomie sur notre terre ancestrale.",
+  upcomingEyebrow: 'Engagement communautaire',
+  upcomingDescription: "Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins : chaque geste renforce durablement l’autonomie locale.",
   upcomingPrimaryButton: 'Soutenir une action',
-  upcomingSecondaryButton: 'Nous contacter',
-  emptyArticlesTitle: "Aucun article publié pour l'instant",
-  emptyArticlesDescription: 'Accédez à la section administration pour créer ou activer des articles.',
-  emptyArticlesButton: 'Rédiger un article',
-  featuredLabel: 'À la une',
-  articleReadLabel: "Lire l'enseignement",
+  emptyArticlesTitle: "Aucun article publié pour l’instant.",
+  emptyArticlesDescription: 'De nouvelles publications seront bientôt disponibles.',
   articlesLoadingLabel: 'Chargement des publications…',
   articlesErrorLabel: 'Les publications sont momentanément indisponibles.',
   retryLabel: 'Réessayer',
-  filters: [
-    { id: 'all', label: 'Tous', icon: 'all_inclusive' },
-    { id: 'video', label: 'Vidéos récentes', icon: 'smart_display' },
-    { id: 'agriculture', label: 'Agriculture', icon: 'eco' },
-    { id: 'elevage', label: 'Élevage', icon: 'pets' },
-    { id: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' },
-  ],
 };
 
-export const HOME_METRICS = [
-  {
-    value: '+450 Ha',
-    label: 'Terres cultivées',
-    sublabel: 'Restauration Zaï',
-    icon: 'eco',
-    bgColor: 'bg-[#1b4332] text-white',
-    textColor: 'text-[#c1ecd4]',
-  },
-  {
-    value: '38',
-    label: 'Forages & Puits',
-    sublabel: 'Adduction solaire',
-    icon: 'water_drop',
-    bgColor: 'bg-[#7d562d] text-white',
-    textColor: 'text-[#ffdcbd]',
-  },
-  {
-    value: '+1 200',
-    label: 'Têtes de bétail',
-    sublabel: 'Embouche saine',
-    icon: 'cruelty_free',
-    bgColor: 'bg-[#dce5de] text-[#151d1a]',
-    textColor: 'text-[#414844]',
-  },
-  {
-    value: '15 000+',
-    label: 'Bénéficiaires',
-    sublabel: 'Rayonnement provincial',
-    icon: 'groups',
-    bgColor: 'bg-[#00452e] text-white',
-    textColor: 'text-[#b1f0ce]',
-  },
+export const HOME_METRICS: StatContent[] = [
+  { value: '+450 ha', label: 'Terres cultivées', sublabel: 'Restauration par le Zaï' },
+  { value: '38', label: 'Forages et puits', sublabel: 'Adduction solaire' },
+  { value: '+1 200', label: 'Têtes de bétail', sublabel: 'Élevage accompagné' },
+  { value: '15 000+', label: 'Bénéficiaires', sublabel: 'Rayonnement provincial' },
 ];
 
-export const AGRICULTURE_PAGE_DATA = {
-  guideCard: {
-    badge: 'Document Pratique & Formation',
-    title: 'Fiche Technique Agricole 2024',
-    description: 'Calendrier des semis, dimensions des cuvettes de Zaï et dosage de compost organique sahélien pour les agriculteurs.',
-    fileLabel: 'PDF Illustré • 2.4 Mo',
-    buttonLabel: 'Consulter le guide',
-  },
-  header: {
-    badge: 'Pôle Agricole',
-    title: 'Sillons Verts de Nagréogo',
-    description: "Régénération des sols sahéliens par l'alliance du Zaï mécanisé, de l'irrigation goutte-à-goutte solaire et de l'agroforesterie communautaire initiée par le Cheick Bikienga Seydou.",
-  },
+export const AGRICULTURE_PAGE_DATA: AgriculturePageContent = {
+  header: { badge: 'Pôle agricole', title: 'Sillons verts de Nagréogo', description: "Régénération des sols sahéliens par l’alliance du Zaï mécanisé, de l’irrigation solaire et de l’agroforesterie communautaire." },
   stats: [
     { value: '185 ha', label: 'Superficie', sub: 'Terres revivifiées' },
-    { value: '12 var.', label: 'Semences', sub: 'Locales & résilientes' },
-    { value: '+340', label: 'Emplois', sub: 'Jeunes & femmes' },
+    { value: '12 var.', label: 'Semences', sub: 'Locales et résilientes' },
+    { value: '+340', label: 'Emplois', sub: 'Jeunes et femmes' },
   ],
-  filters: [
-    { id: 'all', label: 'Tous les récits', icon: 'apps' },
-    { id: 'techniques', label: 'Zaï & Sols', icon: 'psychology_alt' },
-    { id: 'maraichage', label: 'Maraîchage', icon: 'water_drop' },
-    { id: 'arbres', label: 'Agroforesterie', icon: 'forest' },
-  ],
-  quote: "« Soigner la terre de nos ancêtres avec patience et méthode, c'est semer la paix et nourrir la dignité de nos enfants. »",
-  author: '— CHEICK BIKIENGA SEYDOU, NAGRÉOGO',
+  storiesTitle: 'Réalisations et reportages',
+  guideCard: { badge: 'Guide pratique', title: 'Fiche technique agricole', description: 'Calendrier des semis, dimensions des cuvettes de Zaï et dosage du compost pour les agriculteurs.', fileLabel: 'Consultation en ligne', buttonLabel: 'Consulter le guide' },
 };
 
-export const ELEVAGE_PAGE_DATA = {
-  rationLabel: 'Ration équilibrée :',
-  rationValue: '100% Locale',
-  rationParts: ['45% Légumineuses', '35% Coton', '20% Céréales'],
-  rationTooltips: ["Fanes d’arachide / niébé (45%)", 'Tourteau de coton (35%)', 'Son de maïs & minéraux (20%)'],
-  ctaTitle: 'Participez au renforcement du cheptel sahélien',
-  ctaDescription: "Soutenez les campagnes vétérinaires et l’équipement des familles d’éleveurs vulnérables de Nagréogo.",
+export const ELEVAGE_PAGE_DATA: ElevagePageContent = {
+  header: { badge: 'Pôle pastoral & élevage', title: 'Modernisation et préservation pastorale', description: "Le domaine pastoral associe les savoirs sahéliens et les pratiques vétérinaires durables pour renforcer les élevages locaux." },
+  stats: [
+    { value: '98,4 %', label: 'Couverture vaccinale' },
+    { value: '850 L', label: 'Lait frais par jour' },
+    { value: '120 t', label: 'Foin et ensilage' },
+  ],
+  storiesTitle: 'Pratiques et réalisations',
+  adviceTitle: 'Conseils essentiels',
+  rules: [
+    { title: 'Abri thermique et ventilation naturelle', description: "Protéger les animaux entre 11 h et 16 h et orienter les abris de façon à favoriser une ventilation naturelle." },
+    { title: 'Eau tempérée et ombragée', description: "Isoler les canalisations et distribuer une eau fraîche, à l’ombre, afin de préserver l’appétit et l’hydratation du troupeau." },
+    { title: 'Alimentation aux heures fraîches', description: 'Distribuer l’essentiel de la ration en soirée et tôt le matin pour limiter le stress thermique pendant la digestion.' },
+  ],
+  ctaTitle: 'Renforcer le cheptel sahélien',
+  ctaDescription: 'Soutenez les campagnes vétérinaires et l’équipement des familles d’éleveurs vulnérables de Nagréogo.',
+  donationButton: 'Soutenir une action',
+};
+
+export const HUMANITAIRE_PAGE_DATA: HumanitairePageContent = {
+  header: { badge: 'Pôle humanitaire & solidarité', title: 'Au cœur de la fraternité sahélienne', description: 'Des puits aux greniers solidaires, chaque action menée à Nagréogo contribue à la dignité et au relèvement communautaire.' },
+  stats: [
+    { value: '38', label: 'Forages et puits' },
+    { value: '1 420', label: 'Kits scolaires' },
+    { value: '850 t', label: 'Vivres de soudure' },
+  ],
+  chroniclesTitle: 'Actions sur le terrain',
+  chroniclesSubtitle: 'Des résultats documentés par les récits et reportages',
+  actionTitle: 'Agir aux côtés de Nagréogo',
+  actionSubtitle: 'Don et contact',
+  actionDescription: 'Votre participation accompagne directement les familles et les projets communautaires.',
   donationButton: 'Faire un don',
   contactButton: 'Contacter le secrétariat',
-  header: {
-    badge: 'Pôle Pastoral & Élevage',
-    title: 'Modernisation & Préservation Pastorale à Nagréogo',
-    description: "Sous la vision du Cheick Bikienga Seydou, notre domaine pastoral réconcilie les savoirs sahéliens ancestraux et les technologies vétérinaires durables. Nous œuvrons pour l'autonomie en protéines animales et l'amélioration génétique ciblée des races locales emblématiques : zébus Azawak et Goudali, taurins Peuls et moutons Djallonké résistants.",
-    quote: "« Nourrir dignement la terre et soigner le troupeau, c'est préserver la paix et l'abondance des générations à venir. »",
-    author: 'CHEICK BIKIENGA SEYDOU • NAGRÉOGO',
-  },
-  filters: [
-    { id: 'all', label: 'Tout voir' },
-    { id: 'bovins', label: 'Bovins Azawak & Goudali' },
-    { id: 'ovins', label: 'Ovins Djallonké' },
-    { id: 'laiterie', label: 'Laiterie & Fourrage' },
-  ],
-  stats: [
-    { value: '98.4%', label: 'Couverture vaccinale', icon: 'verified', bg: 'bg-[#c1ecd4] text-[#002114]' },
-    { value: '850 L', label: 'Lait frais / jour', icon: 'water_drop', bg: 'bg-[#ffca98] text-[#7a532a]' },
-    { value: '120 T', label: 'Foin & ensilage', icon: 'grass', bg: 'bg-[#e2eae4] text-[#012d1d]' },
-  ],
-  rules: [
-    {
-      ruleNum: 'Règle #1',
-      title: 'Abri thermique & ventilation naturelle',
-      desc: "Ne laissez jamais les animaux exposés entre 11h et 16h lors des pics à plus de 40°C. Aménagez des hangars à double toit en chaume local et orientez les ouvertures face aux vents d'harmattan pour favoriser un courant d'air rafraîchissant sans poussière.",
-      icon: 'wb_sunny',
-      bgIcon: 'bg-[#ffca98] text-[#7a532a]',
-    },
-    {
-      ruleNum: 'Règle #2',
-      title: 'Abreuvement à l’eau tempérée ombragée',
-      desc: "Une eau chaude (>30°C) en plein soleil coupe l'appétit de l'animal et provoque des indigestions. Isolez les canalisations d'eau des forages et distribuez de l'eau fraîche enrichie d'une pincée de sel gemme pour compenser la déshydratation minérale.",
-      icon: 'water',
-      bgIcon: 'bg-[#c1ecd4] text-[#002114]',
-    },
-    {
-      ruleNum: 'Règle #3',
-      title: 'Alimentation nocturne & aux aurores',
-      desc: 'La digestion génère une forte chaleur métabolique interne. Distribuez 65% de la ration de foin et de concentrés entre 18h et 22h, et très tôt au lever du jour, permettant ainsi à la panse de digérer sereinement pendant les heures fraîches.',
-      icon: 'nightlight_round',
-      bgIcon: 'bg-[#e2eae4] text-[#012d1d]',
-    },
-  ],
-};
-
-export const HUMANITAIRE_PAGE_DATA = {
-  header: {
-    badge: 'Pôle Humanitaire & Solidarité',
-    title: 'Au Cœur de la Fraternité Sahélienne',
-    description: 'Des puits de vie aux greniers solidaires, chaque action menée à Nagréogo est un acte de foi envers la dignité humaine et le relèvement communautaire.',
-    quote: "« Donner de l'eau, nourrir un foyer affamé ou instruire un orphelin n'est point une faveur : c'est notre dette sacrée envers cette terre et ceux qui y souffrent. »",
-    author: 'Cheick Bikienga Seydou',
-  },
-  stats: [
-    { value: '38', label: 'Forages & Puits', icon: 'water_drop', color: 'text-primary' },
-    { value: '1 420', label: 'Kits Scolaires', icon: 'school', color: 'text-secondary' },
-    { value: '850 t', label: 'Vivres Soudure', icon: 'inventory_2', color: 'text-primary' },
-  ],
-  wellProgress: {
-    title: 'Progression du Puits N°39 (Nagréogo Nord)',
-    percent: 82,
-    note: 'Foration terminée • Installation du groupe solaire et cuve en cours',
-  },
-  chroniclesTitle: 'Chroniques de Solidarité',
-  chroniclesSubtitle: 'Vidéos immersives et récits de terrain',
-  actionTitle: 'Agir aux côtés du Cheick',
-  actionSubtitle: 'Relayez ou participez aux œuvres de Nagréogo',
-  actionDescription: 'Votre concours transforme durablement la vie des familles.',
-  donationButton: 'Faire un don direct',
-  shareButton: 'Partager la cause',
-  shareTitle: 'Actions Humanitaires - Cheick Bikienga',
-  shareDescription: 'Découvrez les forages, greniers et écoles de solidarité à Nagréogo.',
-  shareSuccessLabel: 'Lien copié !',
-  readLabel: 'Lire',
-  collapseLabel: 'Réduire',
-  reportageActionLabel: 'Lire le récit',
-  contactErrorMessage: 'Envoi impossible.',
-  contactLoadingLabel: 'Transmission…',
-  transparencyText: 'Transparence absolue sur chaque contribution reçue.',
-  contactTitle: 'Secrétariat & Engagement Solidaire',
-  responseLabel: 'Réponse rapide',
-  namePlaceholder: 'Votre nom complet',
-  phonePlaceholder: 'Téléphone / WhatsApp',
-  messagePlaceholder: 'Votre message…',
-  contactSubmitLabel: 'Transmettre mon engagement',
-  contactSuccessMessage: 'Barakallahou fik ! Votre engagement a bien été transmis.',
-  contactOptions: [
-    { value: 'forage', label: 'Contribution Forage & Eau Potable' },
-    { value: 'scolaire', label: 'Soutien scolaire et kits' },
-    { value: 'vivres', label: 'Dons de vivres' },
-    { value: 'benevole', label: 'Volontariat' },
-  ],
 };
 
 export const DEFAULT_MEDIA_ITEMS: MediaItem[] = [

@@ -9,17 +9,17 @@ export const APP_ASSETS = {
 export const HOME_CONTENT = {
   badge: 'Terroir, Foi & Développement', title: "L'Œuvre & les Réalisations du Cheick",
   description: "Au service de la terre nourricière et des communautés unies de Nagréogo, au cœur du Plateau-Central burkinabè. Une vision intégrée d'autosuffisance alimentaire, d'eau potable et de fraternité solidaire.",
-  primaryButton: 'Participer aux chantiers', secondaryButton: 'Lire les méditations',
+  primaryButton: 'Participer aux chantiers',
   quote: '« Nourrir les âmes, cultiver la terre et tendre la main. »', quoteAuthor: 'Cheick Bikienga Seydou — Guide Spirituel & Bâtisseur', quoteCaption: 'Fondateur du domaine pilote agropastoral de Nagréogo',
   impactTitle: 'Impact Réel à Nagréogo', impactPeriod: 'Bilan Consolidé 2024', storiesTitle: 'Reportages et récits', articlesTitle: 'Articles récents',
-  articlesEyebrow: 'Méditations & Enseignements', articlesHeading: 'Derniers écrits & Paroles de sagesse', articlesMoreLabel: 'Tout voir', upcomingTitle: 'Participez aux prochains chantiers de Nagréogo', upcomingEyebrow: 'Partenariat & Fraternité Sahélienne', upcomingDescription: "Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins. Chaque geste enracine l'espoir et l'autonomie sur notre terre ancestrale.", upcomingPrimaryButton: 'Soutenir une action', upcomingSecondaryButton: 'Nous contacter', emptyArticlesTitle: "Aucun article publié pour l'instant", emptyArticlesDescription: 'Accédez à la section administration pour créer ou activer des articles.', emptyArticlesButton: 'Rédiger un article', featuredLabel: 'À la une', articleReadLabel: "Lire l'enseignement", articlesLoadingLabel: 'Chargement des publications…', articlesErrorLabel: 'Les publications sont momentanément indisponibles.', retryLabel: 'Réessayer',
-  filters: [{ id: 'all', label: 'Tous', icon: 'all_inclusive' }, { id: 'video', label: 'Vidéos récentes', icon: 'smart_display' }, { id: 'agriculture', label: 'Agriculture', icon: 'eco' }, { id: 'elevage', label: 'Élevage', icon: 'pets' }, { id: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' }],
+  projectsTitle: 'Chantiers auxquels participer', projectsDescription: 'Consultez les besoins, l’action prévue et l’état de chaque chantier publié par l’équipe.', projectsEmptyLabel: 'Aucun chantier ouvert actuellement. Les prochains besoins seront publiés ici.', projectActionLabel: 'Voir le chantier', participateLabel: 'Participer à ce chantier',
+  articlesEyebrow: 'Méditations & Enseignements', articlesHeading: 'Derniers écrits & Paroles de sagesse', upcomingTitle: 'Participez aux prochains chantiers de Nagréogo', upcomingEyebrow: 'Partenariat & Fraternité Sahélienne', upcomingDescription: "Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins. Chaque geste enracine l'espoir et l'autonomie sur notre terre ancestrale.", upcomingPrimaryButton: 'Soutenir une action', emptyArticlesTitle: "Aucun article publié pour l'instant", emptyArticlesDescription: 'Accédez à la section administration pour créer ou activer des articles.', articlesLoadingLabel: 'Chargement des publications…', articlesErrorLabel: 'Les publications sont momentanément indisponibles.', retryLabel: 'Réessayer',
 };
 
 export const SITE_CONTENT = {
   brand: { name: 'Sillon Sahélien', subtitle: 'Nagréogo & Cheick Bikienga Seydou', logoUrl: APP_ASSETS.logo, logoAlt: 'Logo Sillon Sahélien' },
   navigation: { items: [{ id: 'accueil', label: 'Accueil', footerLabel: 'Accueil & Échos' }, { id: 'agriculture', label: 'Agriculture', footerLabel: 'Pôle Agricole & Zaï' }, { id: 'elevage', label: 'Élevage', footerLabel: 'Pôle Pastoral & Élevage' }, { id: 'humanitaire', label: 'Humanitaire', footerLabel: 'Œuvres Humanitaires & Eau' }], searchLabel: 'Rechercher…', supportLabel: "Soutenir l’action", profileLabel: 'Notice biographique du Cheick' },
-  contact: { location: 'Nagréogo, Région du Plateau-Central, Burkina Faso', email: '', phone: '', whatsapp: '' },
+  contact: { location: 'Nagréogo, Région du Plateau-Central, Burkina Faso', email: 'contact@nagreogo.bf', phone: '+226 70 00 00 00', whatsapp: '+226 70 00 00 00' },
   footer: { description: 'Plateforme officielle de valorisation agro-écologique, pastorale et humanitaire du village de Nagréogo (Burkina Faso). Allier tradition sahélienne, science régénérative et solidarité fraternelle.', navigationTitle: "Pôles d'Action", supportTitle: 'Soutien & Fraternité', supportDescription: 'Soutenez les forages, les arbres et les semences paysannes locales par un don ou en contactant le secrétariat.', donationButton: 'Faire un don aux œuvres', profileButton: 'Biographie du Cheick', copyright: '© 2024-2026 Sillon Sahélien • Cheick Bikienga Seydou — Nagréogo. Tous droits réservés.', signature: 'Agro-écologie • Pâturage régénératif • Fraternité' },
   profile: { name: 'Cheick Bikienga Seydou', title: 'Guide spirituel & bâtisseur', biography: "Engagé au service de Nagréogo, le Cheick unit transmission spirituelle, régénération des terres et solidarité communautaire.", quote: 'Nourrir les âmes, cultiver la terre et tendre la main.', imageUrl: APP_ASSETS.profile, imageAlt: 'Portrait du Cheick Bikienga Seydou', buttonLabel: 'Agir aux côtés du Cheick' },
   guide: { badge: 'Guide pratique', title: 'Guide maraîcher', introduction: "Principes pratiques pour une agriculture sahélienne économe en eau et respectueuse des sols.", buttonLabel: 'Fermer le guide' },
@@ -32,33 +32,21 @@ export const HOME_METRICS: MetricCard[] = [
     value: '+450 Ha',
     label: 'Terres cultivées',
     sublabel: 'Restauration Zaï',
-    icon: 'eco',
-    bgColor: 'bg-[#1b4332] text-white',
-    textColor: 'text-[#c1ecd4]',
   },
   {
     value: '38',
     label: 'Forages & Puits',
     sublabel: 'Adduction solaire',
-    icon: 'water_drop',
-    bgColor: 'bg-[#7d562d] text-white',
-    textColor: 'text-[#ffdcbd]',
   },
   {
     value: '+1 200',
     label: 'Têtes de bétail',
     sublabel: 'Embouche saine',
-    icon: 'cruelty_free',
-    bgColor: 'bg-[#dce5de] text-[#151d1a]',
-    textColor: 'text-[#414844]',
   },
   {
     value: '15 000+',
     label: 'Bénéficiaires',
     sublabel: 'Rayonnement provincial',
-    icon: 'groups',
-    bgColor: 'bg-[#00452e] text-white',
-    textColor: 'text-[#b1f0ce]',
   },
 ];
 
@@ -218,12 +206,6 @@ export const AGRICULTURE_DATA = {
     { value: '12 var.', label: 'Semences', sub: 'Locales & résilientes' },
     { value: '+340', label: 'Emplois', sub: 'Jeunes & femmes' },
   ],
-  filters: [
-    { id: 'all', label: 'Tous les récits', icon: 'apps' },
-    { id: 'techniques', label: 'Zaï & Sols', icon: 'psychology_alt' },
-    { id: 'maraichage', label: 'Maraîchage', icon: 'water_drop' },
-    { id: 'arbres', label: 'Agroforesterie', icon: 'forest' },
-  ],
   videos: [
     {
       id: 'zai-mecanise',
@@ -277,29 +259,19 @@ export const AGRICULTURE_DATA = {
       btnText: 'Voir la carte',
     },
   ],
-  quote: "« Soigner la terre de nos ancêtres avec patience et méthode, c'est semer la paix et nourrir la dignité de nos enfants. »",
-  author: '— CHEICK BIKIENGA SEYDOU, NAGRÉOGO',
 };
 
 export const ELEVAGE_DATA = {
-  rationLabel: 'Ration équilibrée :', rationValue: '100% Locale', rationParts: ['45% Légumineuses', '35% Coton', '20% Céréales'], rationTooltips: ["Fanes d’arachide / niébé (45%)", 'Tourteau de coton (35%)', 'Son de maïs & minéraux (20%)'], ctaTitle: 'Participez au renforcement du cheptel sahélien', ctaDescription: "Soutenez les campagnes vétérinaires et l’équipement des familles d’éleveurs vulnérables de Nagréogo.", donationButton: 'Faire un don', contactButton: 'Contacter le secrétariat',
+  ctaTitle: 'Participez au renforcement du cheptel sahélien', ctaDescription: "Soutenez les campagnes vétérinaires et l’équipement des familles d’éleveurs vulnérables de Nagréogo.", donationButton: 'Faire un don',
   header: {
     badge: 'Pôle Pastoral & Élevage',
     title: 'Modernisation & Préservation Pastorale à Nagréogo',
     description: "Sous la vision du Cheick Bikienga Seydou, notre domaine pastoral réconcilie les savoirs sahéliens ancestraux et les technologies vétérinaires durables. Nous œuvrons pour l'autonomie en protéines animales et l'amélioration génétique ciblée des races locales emblématiques : zébus Azawak et Goudali, taurins Peuls et moutons Djallonké résistants.",
-    quote: "« Nourrir dignement la terre et soigner le troupeau, c'est préserver la paix et l'abondance des générations à venir. »",
-    author: 'CHEICK BIKIENGA SEYDOU • NAGRÉOGO',
   },
-  filters: [
-    { id: 'all', label: 'Tout voir' },
-    { id: 'bovins', label: 'Bovins Azawak & Goudali' },
-    { id: 'ovins', label: 'Ovins Djallonké' },
-    { id: 'laiterie', label: 'Laiterie & Fourrage' },
-  ],
   stats: [
-    { value: '98.4%', label: 'Couverture vaccinale', icon: 'verified', bg: 'bg-[#c1ecd4] text-[#002114]' },
-    { value: '850 L', label: 'Lait frais / jour', icon: 'water_drop', bg: 'bg-[#ffca98] text-[#7a532a]' },
-    { value: '120 T', label: 'Foin & ensilage', icon: 'grass', bg: 'bg-[#e2eae4] text-[#012d1d]' },
+    { value: '98.4%', label: 'Couverture vaccinale' },
+    { value: '850 L', label: 'Lait frais / jour' },
+    { value: '120 T', label: 'Foin & ensilage' },
   ],
   videos: [
     {
@@ -392,20 +364,13 @@ export const HUMANITAIRE_DATA = {
     badge: 'Pôle Humanitaire & Solidarité',
     title: 'Au Cœur de la Fraternité Sahélienne',
     description: 'Des puits de vie aux greniers solidaires, chaque action menée à Nagréogo est un acte de foi envers la dignité humaine et le relèvement communautaire.',
-    quote: "« Donner de l'eau, nourrir un foyer affamé ou instruire un orphelin n'est point une faveur : c'est notre dette sacrée envers cette terre et ceux qui y souffrent. »",
-    author: 'Cheick Bikienga Seydou',
   },
   stats: [
     { value: '38', label: 'Forages & Puits', icon: 'water_drop', color: 'text-primary' },
     { value: '1 420', label: 'Kits Scolaires', icon: 'school', color: 'text-secondary' },
     { value: '850 t', label: 'Vivres Soudure', icon: 'inventory_2', color: 'text-primary' },
   ],
-  wellProgress: {
-    title: 'Progression du Puits N°39 (Nagréogo Nord)',
-    percent: 82,
-    note: 'Foration terminée • Installation du groupe solaire et cuve en cours',
-  },
-  chroniclesTitle: 'Chroniques de Solidarité', chroniclesSubtitle: 'Vidéos immersives et récits de terrain', actionTitle: 'Agir aux côtés du Cheick', actionSubtitle: 'Relayez ou participez aux œuvres de Nagréogo', actionDescription: 'Votre concours transforme durablement la vie des familles.', donationButton: 'Faire un don direct', shareButton: 'Partager la cause', shareTitle: 'Actions Humanitaires - Cheick Bikienga', shareDescription: 'Découvrez les forages, greniers et écoles de solidarité à Nagréogo.', shareSuccessLabel: 'Lien copié !', readLabel: 'Lire', collapseLabel: 'Réduire', reportageActionLabel: 'Lire le récit', contactErrorMessage: 'Envoi impossible.', contactLoadingLabel: 'Transmission…', transparencyText: 'Transparence absolue sur chaque contribution reçue.', contactTitle: 'Secrétariat & Engagement Solidaire', responseLabel: 'Réponse rapide', namePlaceholder: 'Votre nom complet', phonePlaceholder: 'Téléphone / WhatsApp', messagePlaceholder: 'Votre message…', contactSubmitLabel: 'Transmettre mon engagement', contactSuccessMessage: 'Barakallahou fik ! Votre engagement a bien été transmis.', contactOptions: [{ value: 'forage', label: 'Contribution Forage & Eau Potable' }, { value: 'scolaire', label: 'Soutien scolaire et kits' }, { value: 'vivres', label: 'Dons de vivres' }, { value: 'benevole', label: 'Volontariat' }],
+  chroniclesTitle: 'Chroniques de Solidarité', chroniclesSubtitle: 'Récits de terrain', actionTitle: 'Agir aux côtés du Cheick', actionSubtitle: 'Don et contact', actionDescription: 'Votre concours transforme durablement la vie des familles.', donationButton: 'Faire un don direct', contactButton: 'Contacter le secrétariat',
   chronicles: [
     {
       id: 'forage-38',

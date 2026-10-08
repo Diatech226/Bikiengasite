@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { MediaItemDto } from './dto/content.dto';
-import { ContentService, validateData, validateForKey } from './content.service';
+import { ContentService, sanitizeForKey, validateData, validateForKey } from './content.service';
 
 const query = <T>(value: T) => ({ sort: jest.fn().mockReturnThis(), lean: jest.fn().mockResolvedValue(value) });
 
@@ -38,6 +38,40 @@ describe('ContentService', () => {
         { id: 'elevage', label: 'Pôle pastoral' }, { id: 'agriculture', label: 'Pôle agricole' },
       ], searchLabel: 'Chercher', supportLabel: 'Participer', profileLabel: 'Biographie',
     })).not.toThrow();
+  });
+
+  it('retire les anciens champs CMS avant exposition ou sauvegarde', () => {
+    const home = sanitizeForKey('home.page', { title: 'Accueil', filters: [], secondaryButton: 'Ancien', storiesTitle: 'Récits' });
+    expect(home).toEqual(expect.objectContaining({ title: 'Accueil', storiesTitle: 'Récits', projectsTitle: 'Chantiers auxquels participer' }));
+    expect(home).not.toHaveProperty('filters');
+    expect(sanitizeForKey('humanitaire.page', { actionTitle: 'Agir', contactOptions: [], wellProgress: {} }))
+      .toEqual({ actionTitle: 'Agir', contactButton: 'Contacter le secrétariat' });
+  });
+
+  it('normalise les documents MongoDB créés avec l’ancien modèle sans perdre leur texte', () => {
+    expect(sanitizeForKey('elevage.page', {
+      header: { badge: 'Élevage', title: 'Troupeaux', description: 'Présentation', quote: 'Ancienne citation' },
+      stats: [{ value: '10', label: 'Éleveurs', icon: 'pets' }],
+      rules: [{ title: 'Abreuvement', desc: 'Donner une eau fraîche', icon: 'water' }],
+    })).toEqual(expect.objectContaining({
+      storiesTitle: 'Pratiques et réalisations',
+      adviceTitle: 'Conseils essentiels',
+      header: { badge: 'Élevage', title: 'Troupeaux', description: 'Présentation' },
+      stats: [{ value: '10', label: 'Éleveurs' }],
+      rules: [{ title: 'Abreuvement', description: 'Donner une eau fraîche' }],
+    }));
+  });
+
+  it('conserve tous les indicateurs administrés pendant la normalisation', () => {
+    const metrics = Array.from({ length: 5 }, (_, index) => ({ value: String(index), label: `Indicateur ${index}`, icon: 'eco' }));
+    expect((sanitizeForKey('home.page', { metrics }).metrics as unknown[])).toHaveLength(5);
+  });
+
+  it('refuse les objets éditoriaux imbriqués incomplets', () => {
+    expect(() => validateForKey('elevage.page', {
+      header: { badge: 'Élevage', title: '', description: 'Présentation' }, stats: [{ value: '1', label: 'Ferme' }],
+      storiesTitle: 'Récits', adviceTitle: 'Conseils', rules: [{ title: 'Eau' }],
+    })).toThrow('header.title');
   });
 
   it('refuse les URL éditoriales non sécurisées et les structures excessives', () => {

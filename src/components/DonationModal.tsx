@@ -6,9 +6,10 @@ import { SiteDonationContent } from '../services/contentApi';
 interface DonationModalProps {
   onClose: () => void;
   defaultCategory?: string;
+  defaultMessage?: string;
 }
 
-export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
+export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory, defaultMessage }) => {
   const { get } = useContent();
   const donation = get<SiteDonationContent>('site.donation');
   const categories = donation.categories || [];
@@ -17,7 +18,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState(defaultCategory || 'forage');
   const [amount, setAmount] = useState(() => donation.suggestedAmounts?.[0]?.label || '');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(defaultMessage || '');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +36,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
+        role="dialog" aria-modal="true" aria-label="Formulaire de soutien" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -95,7 +96,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                       {donation.nameLabel}
