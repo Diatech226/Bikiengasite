@@ -34,11 +34,11 @@ export const HomeScreen: React.FC<Props> = ({ articles, onOpenVideo, onOpenArtic
     </section>
     <section aria-labelledby="stories-title">
       <div className="section-heading"><h2 id="stories-title">{page.storiesTitle}</h2></div>
-      <div className="editorial-grid">{stories.map((story) => <button type="button" key={story.id} className="editorial-item" onClick={() => onOpenVideo(story)}><img src={story.image} alt={story.alt}/><span className="eyebrow">{story.tagLabel}</span><strong>{story.title}</strong><span className="editorial-summary">{story.summary}</span></button>)}</div>
+      <div className="editorial-grid">{stories.map((story) => <button type="button" key={story.id} className="editorial-item" onClick={() => onOpenVideo(story)}><img src={story.image} alt={story.alt}/><span className="eyebrow">{story.tagLabel}</span><strong>{story.title}</strong><p>{story.summary}</p></button>)}</div>
     </section>
     <section aria-labelledby="articles-title">
       <div className="section-heading"><div><p className="eyebrow">{page.articlesEyebrow}</p><h2 id="articles-title">{page.articlesHeading}</h2></div></div>
-      {articlesLoading ? <p role="status">{page.articlesLoadingLabel}</p> : articlesError ? <div className="inline-error" role="alert"><p>{page.articlesErrorLabel}</p><button onClick={onRetryArticles}>{page.retryLabel}</button></div> : articles.length ? <div className="article-list">{articles.slice(0, 3).map((article) => <button key={article.id} onClick={() => onOpenArticle(article)}><span>{article.category} · {article.date}</span><strong>{article.title}</strong><span>{article.excerpt}</span></button>)}</div> : <div className="inline-error"><p>{page.emptyArticlesTitle}</p><p>{page.emptyArticlesDescription}</p></div>}
+      {articlesLoading ? <p role="status">{page.articlesLoadingLabel}</p> : articlesError ? <div className="inline-error" role="alert"><p>{page.articlesErrorLabel}</p><button onClick={onRetryArticles}>{page.retryLabel}</button></div> : articles.length ? <div className="article-list">{articles.slice(0, 3).map((article) => <button key={article.id} onClick={() => onOpenArticle(article)}><span>{article.category} · {article.date}</span><strong>{article.title}</strong><p>{article.excerpt}</p></button>)}</div> : <div className="inline-error"><p>{page.emptyArticlesTitle}</p><p>{page.emptyArticlesDescription}</p></div>}
     </section>
     <section className="final-cta" aria-labelledby="home-cta-title"><div><p className="eyebrow">{page.upcomingEyebrow}</p><h2 id="home-cta-title">{page.upcomingTitle}</h2><p>{page.upcomingDescription}</p></div><button className="primary-action" onClick={onOpenDonation}>{page.upcomingPrimaryButton}</button></section>
   </div>;

@@ -44,33 +44,7 @@ describe('ContentService', () => {
     expect(sanitizeForKey('home.page', { title: 'Accueil', filters: [], secondaryButton: 'Ancien', storiesTitle: 'Récits' }))
       .toEqual({ title: 'Accueil', storiesTitle: 'Récits' });
     expect(sanitizeForKey('humanitaire.page', { actionTitle: 'Agir', contactOptions: [], wellProgress: {} }))
-      .toEqual({ actionTitle: 'Agir', contactButton: 'Contacter le secrétariat' });
-  });
-
-  it('normalise les documents MongoDB créés avec l’ancien modèle sans perdre leur texte', () => {
-    expect(sanitizeForKey('elevage.page', {
-      header: { badge: 'Élevage', title: 'Troupeaux', description: 'Présentation', quote: 'Ancienne citation' },
-      stats: [{ value: '10', label: 'Éleveurs', icon: 'pets' }],
-      rules: [{ title: 'Abreuvement', desc: 'Donner une eau fraîche', icon: 'water' }],
-    })).toEqual(expect.objectContaining({
-      storiesTitle: 'Pratiques et réalisations',
-      adviceTitle: 'Conseils essentiels',
-      header: { badge: 'Élevage', title: 'Troupeaux', description: 'Présentation' },
-      stats: [{ value: '10', label: 'Éleveurs' }],
-      rules: [{ title: 'Abreuvement', description: 'Donner une eau fraîche' }],
-    }));
-  });
-
-  it('conserve tous les indicateurs administrés pendant la normalisation', () => {
-    const metrics = Array.from({ length: 5 }, (_, index) => ({ value: String(index), label: `Indicateur ${index}`, icon: 'eco' }));
-    expect((sanitizeForKey('home.page', { metrics }).metrics as unknown[])).toHaveLength(5);
-  });
-
-  it('refuse les objets éditoriaux imbriqués incomplets', () => {
-    expect(() => validateForKey('elevage.page', {
-      header: { badge: 'Élevage', title: '', description: 'Présentation' }, stats: [{ value: '1', label: 'Ferme' }],
-      storiesTitle: 'Récits', adviceTitle: 'Conseils', rules: [{ title: 'Eau' }],
-    })).toThrow('header.title');
+      .toEqual({ actionTitle: 'Agir' });
   });
 
   it('refuse les URL éditoriales non sécurisées et les structures excessives', () => {

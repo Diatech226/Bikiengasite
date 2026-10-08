@@ -13,6 +13,7 @@ export const HOME_CONTENT = {
   quote: '« Nourrir les âmes, cultiver la terre et tendre la main. »', quoteAuthor: 'Cheick Bikienga Seydou — Guide Spirituel & Bâtisseur', quoteCaption: 'Fondateur du domaine pilote agropastoral de Nagréogo',
   impactTitle: 'Impact Réel à Nagréogo', impactPeriod: 'Bilan Consolidé 2024', storiesTitle: 'Reportages et récits', articlesTitle: 'Articles récents',
   articlesEyebrow: 'Méditations & Enseignements', articlesHeading: 'Derniers écrits & Paroles de sagesse', upcomingTitle: 'Participez aux prochains chantiers de Nagréogo', upcomingEyebrow: 'Partenariat & Fraternité Sahélienne', upcomingDescription: "Forages solaires, équipement agropastoral, banques céréalières et bourses aux orphelins. Chaque geste enracine l'espoir et l'autonomie sur notre terre ancestrale.", upcomingPrimaryButton: 'Soutenir une action', emptyArticlesTitle: "Aucun article publié pour l'instant", emptyArticlesDescription: 'Accédez à la section administration pour créer ou activer des articles.', articlesLoadingLabel: 'Chargement des publications…', articlesErrorLabel: 'Les publications sont momentanément indisponibles.', retryLabel: 'Réessayer',
+  filters: [{ id: 'all', label: 'Tous', icon: 'all_inclusive' }, { id: 'video', label: 'Vidéos récentes', icon: 'smart_display' }, { id: 'agriculture', label: 'Agriculture', icon: 'eco' }, { id: 'elevage', label: 'Élevage', icon: 'pets' }, { id: 'humanitaire', label: 'Humanitaire', icon: 'volunteer_activism' }],
 };
 
 export const SITE_CONTENT = {
