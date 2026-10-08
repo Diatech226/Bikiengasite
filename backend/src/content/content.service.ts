@@ -28,10 +28,63 @@ const requiredFields: Record<ContentKey, Record<string, 'string'|'array'|'object
   'site.guide': { title: 'string', introduction: 'string', buttonLabel: 'string' },
   'site.donation': { badge: 'string', title: 'string', introduction: 'string', categories: 'array', suggestedAmounts: 'array' },
   'site.search': { placeholder: 'string', suggestions: 'array', mediaTitle: 'string', articlesTitle: 'string' },
-  'home.page': { title: 'string', metrics: 'array', filters: 'array' },
-  'agriculture.page': { header: 'object', stats: 'array', filters: 'array' }, 'elevage.page': { header: 'object', stats: 'array' },
-  'humanitaire.page': { header: 'object', stats: 'array', contactOptions: 'array' },
+  'home.page': { title: 'string', metrics: 'array', storiesTitle: 'string' },
+  'agriculture.page': { header: 'object', stats: 'array', storiesTitle: 'string', guideCard: 'object' },
+  'elevage.page': { header: 'object', stats: 'array', storiesTitle: 'string', adviceTitle: 'string', rules: 'array' },
+  'humanitaire.page': { header: 'object', stats: 'array', chroniclesTitle: 'string', actionTitle: 'string' },
 };
+
+const allowedFields: Record<ContentKey, readonly string[]> = {
+  'site.brand': ['name', 'subtitle', 'logoUrl', 'logoAlt'],
+  'site.navigation': ['items', 'searchLabel', 'supportLabel', 'profileLabel'],
+  'site.footer': ['description', 'navigationTitle', 'supportTitle', 'supportDescription', 'donationButton', 'profileButton', 'copyright', 'signature'],
+  'site.contact': ['location', 'email', 'phone', 'whatsapp'],
+  'site.profile': ['name', 'title', 'biography', 'quote', 'imageUrl', 'imageAlt', 'buttonLabel'],
+  'site.guide': ['badge', 'title', 'introduction', 'buttonLabel'],
+  'site.donation': ['badge', 'eyebrow', 'title', 'introduction', 'projectLabel', 'nameLabel', 'namePlaceholder', 'contactLabel', 'contactPlaceholder', 'emailLabel', 'emailPlaceholder', 'amountLabel', 'messageLabel', 'messagePlaceholder', 'submitLabel', 'successBadge', 'successTitle', 'successMessage', 'categories', 'suggestedAmounts'],
+  'site.search': ['placeholder', 'suggestionsTitle', 'mediaTitle', 'articlesTitle', 'emptyMessage', 'suggestions'],
+  'home.page': ['badge', 'title', 'description', 'primaryButton', 'quote', 'quoteAuthor', 'quoteCaption', 'impactTitle', 'impactPeriod', 'metrics', 'storiesTitle', 'articlesEyebrow', 'articlesHeading', 'upcomingTitle', 'upcomingEyebrow', 'upcomingDescription', 'upcomingPrimaryButton', 'emptyArticlesTitle', 'emptyArticlesDescription', 'articlesLoadingLabel', 'articlesErrorLabel', 'retryLabel'],
+  'agriculture.page': ['header', 'stats', 'storiesTitle', 'guideCard'],
+  'elevage.page': ['header', 'stats', 'storiesTitle', 'adviceTitle', 'rules', 'ctaTitle', 'ctaDescription', 'donationButton'],
+  'humanitaire.page': ['header', 'stats', 'chroniclesTitle', 'chroniclesSubtitle', 'actionTitle', 'actionSubtitle', 'actionDescription', 'donationButton', 'contactButton'],
+};
+
+const addedFieldDefaults: Partial<Record<ContentKey, Record<string, unknown>>> = {
+  'agriculture.page': { storiesTitle: 'Réalisations et reportages' },
+  'elevage.page': { storiesTitle: 'Pratiques et réalisations', adviceTitle: 'Conseils essentiels' },
+  'humanitaire.page': { contactButton: 'Contacter le secrétariat' },
+};
+
+function pick(value: unknown, fields: readonly string[]) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const source = value as Record<string, unknown>;
+  return Object.fromEntries(fields.filter((field) => field in source).map((field) => [field, source[field]]));
+}
+
+function normalizeNestedFields(key: ContentKey, data: Record<string, unknown>) {
+  const normalized = { ...data };
+  if (key !== 'home.page' && key.endsWith('.page') && 'header' in data) {
+    normalized.header = pick(data.header, ['badge', 'title', 'description']);
+  }
+  if (key.endsWith('.page') && Array.isArray(data.stats)) {
+    normalized.stats = data.stats.map((stat) =>
+      pick(stat, key === 'home.page' ? ['value', 'label', 'sublabel'] : key === 'agriculture.page' ? ['value', 'label', 'sub'] : ['value', 'label']),
+    );
+  }
+  if (key === 'elevage.page' && Array.isArray(data.rules)) {
+    normalized.rules = data.rules.map((rule) => {
+      const source = rule && typeof rule === 'object' ? rule as Record<string, unknown> : {};
+      return { title: source.title, description: source.description ?? source.desc };
+    });
+  }
+  return normalized;
+}
+
+export function sanitizeForKey(key: ContentKey, data: Record<string, unknown>) {
+  const withDefaults = { ...addedFieldDefaults[key], ...data };
+  const allowed = Object.fromEntries(allowedFields[key].filter((field) => field in withDefaults).map((field) => [field, withDefaults[field]]));
+  return normalizeNestedFields(key, allowed);
+}
 export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   for (const [field, expected] of Object.entries(requiredFields[key])) {
     const value = data[field];
@@ -41,10 +94,6 @@ export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   const allowedValues: Partial<Record<ContentKey, Record<string, readonly string[]>>> = {
     'site.navigation': { items: ['accueil', 'agriculture', 'elevage', 'humanitaire'] },
     'site.donation': { categories: ['forage', 'cereales', 'orphelins', 'arbres', 'materiel'] },
-    'humanitaire.page': { contactOptions: ['forage', 'scolaire', 'vivres', 'benevole'] },
-    'home.page': { filters: ['all', 'video', 'agriculture', 'elevage', 'humanitaire'] },
-    'agriculture.page': { filters: ['all', 'techniques', 'maraichage', 'arbres'] },
-    'elevage.page': { filters: ['all', 'bovins', 'ovins', 'laiterie'] },
   };
   for (const [field, allowed] of Object.entries(allowedValues[key] || {})) {
     const values = data[field] as Array<Record<string, unknown>>;
@@ -58,8 +107,26 @@ export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
     const amounts = data.suggestedAmounts as Array<Record<string, unknown>>;
     if (!amounts.every((amount) => typeof amount.value === 'number' && amount.value > 0 && typeof amount.label === 'string')) throw new BadRequestException('Chaque montant doit avoir une valeur positive et un libellé');
   }
+  if (key.endsWith('.page')) {
+    const requireStrings = (value: unknown, fields: readonly string[], path: string) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException(`${path} doit être un objet`);
+      const record = value as Record<string, unknown>;
+      for (const field of fields) if (typeof record[field] !== 'string' || !record[field].trim()) throw new BadRequestException(`${path}.${field} doit être un texte non vide`);
+    };
+    if (key !== 'home.page') requireStrings(data.header, ['badge', 'title', 'description'], `${key}.header`);
+    const stats = data[key === 'home.page' ? 'metrics' : 'stats'] as unknown[];
+    if (!Array.isArray(stats) || !stats.length) throw new BadRequestException(`${key} doit contenir au moins un indicateur`);
+    stats.forEach((stat, index) => requireStrings(stat, ['value', 'label'], `${key}.indicateurs[${index}]`));
+    if (key === 'elevage.page') {
+      const rules = data.rules as unknown[];
+      rules.forEach((rule, index) => requireStrings(rule, ['title', 'description'], `${key}.rules[${index}]`));
+    }
+  }
 }
 function clean<T extends Record<string, unknown>>(document: T) { const { _id, __v, ...value } = document; return { ...value, id: String(_id) }; }
+function cleanBlock<T extends { key: ContentKey; data: Record<string, unknown> } & Record<string, unknown>>(document: T) {
+  return { ...clean(document), data: sanitizeForKey(document.key, document.data) };
+}
 
 @Injectable()
 export class ContentService {
@@ -67,13 +134,15 @@ export class ContentService {
   async publicContent(section?: string) {
     const filter = section ? { section } : {};
     const [blocks, mediaItems] = await Promise.all([this.contents.find(filter).sort({ key: 1 }).lean(), this.media.find({ ...(section ? { section } : {}), isActive: true }).sort({ section: 1, order: 1 }).lean()]);
-    return { blocks: blocks.map(clean), mediaItems: mediaItems.map(clean) };
+    return { blocks: blocks.map((block) => cleanBlock(block as never)), mediaItems: mediaItems.map(clean) };
   }
-  adminContent() { return Promise.all([this.contents.find().sort({ key: 1 }).lean(), this.media.find().sort({ section: 1, order: 1 }).lean()]).then(([blocks, mediaItems]) => ({ blocks: blocks.map(clean), mediaItems: mediaItems.map(clean) })); }
+  adminContent() { return Promise.all([this.contents.find().sort({ key: 1 }).lean(), this.media.find().sort({ section: 1, order: 1 }).lean()]).then(([blocks, mediaItems]) => ({ blocks: blocks.map((block) => cleanBlock(block as never)), mediaItems: mediaItems.map(clean) })); }
   async update(key: string, data: Record<string, unknown>, userId?: string) {
     if (!CONTENT_KEYS.includes(key as ContentKey)) throw new BadRequestException('Bloc de contenu inconnu');
-    validateData(data); validateForKey(key as ContentKey, data);
-    const result = await this.contents.findOneAndUpdate({ key }, { $set: { data, updatedBy: userId } }, { new: true, runValidators: true }).lean();
+    const contentKey = key as ContentKey;
+    const sanitized = sanitizeForKey(contentKey, data);
+    validateData(sanitized); validateForKey(contentKey, sanitized);
+    const result = await this.contents.findOneAndUpdate({ key }, { $set: { data: sanitized, updatedBy: userId } }, { new: true, runValidators: true }).lean();
     if (!result) throw new NotFoundException('Bloc introuvable. Exécutez le seed initial.');
     return clean(result);
   }
