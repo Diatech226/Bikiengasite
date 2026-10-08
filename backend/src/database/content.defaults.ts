@@ -19,7 +19,7 @@ export const HOME_CONTENT = {
 export const SITE_CONTENT = {
   brand: { name: 'Sillon Sahélien', subtitle: 'Nagréogo & Cheick Bikienga Seydou', logoUrl: APP_ASSETS.logo, logoAlt: 'Logo Sillon Sahélien' },
   navigation: { items: [{ id: 'accueil', label: 'Accueil', footerLabel: 'Accueil & Échos' }, { id: 'agriculture', label: 'Agriculture', footerLabel: 'Pôle Agricole & Zaï' }, { id: 'elevage', label: 'Élevage', footerLabel: 'Pôle Pastoral & Élevage' }, { id: 'humanitaire', label: 'Humanitaire', footerLabel: 'Œuvres Humanitaires & Eau' }], searchLabel: 'Rechercher…', supportLabel: "Soutenir l’action", profileLabel: 'Notice biographique du Cheick' },
-  contact: { location: 'Nagréogo, Région du Plateau-Central, Burkina Faso', email: '', phone: '', whatsapp: '' },
+  contact: { location: 'Nagréogo, Région du Plateau-Central, Burkina Faso', email: 'contact@nagreogo.bf', phone: '+226 70 00 00 00', whatsapp: '+226 70 00 00 00' },
   footer: { description: 'Plateforme officielle de valorisation agro-écologique, pastorale et humanitaire du village de Nagréogo (Burkina Faso). Allier tradition sahélienne, science régénérative et solidarité fraternelle.', navigationTitle: "Pôles d'Action", supportTitle: 'Soutien & Fraternité', supportDescription: 'Soutenez les forages, les arbres et les semences paysannes locales par un don ou en contactant le secrétariat.', donationButton: 'Faire un don aux œuvres', profileButton: 'Biographie du Cheick', copyright: '© 2024-2026 Sillon Sahélien • Cheick Bikienga Seydou — Nagréogo. Tous droits réservés.', signature: 'Agro-écologie • Pâturage régénératif • Fraternité' },
   profile: { name: 'Cheick Bikienga Seydou', title: 'Guide spirituel & bâtisseur', biography: "Engagé au service de Nagréogo, le Cheick unit transmission spirituelle, régénération des terres et solidarité communautaire.", quote: 'Nourrir les âmes, cultiver la terre et tendre la main.', imageUrl: APP_ASSETS.profile, imageAlt: 'Portrait du Cheick Bikienga Seydou', buttonLabel: 'Agir aux côtés du Cheick' },
   guide: { badge: 'Guide pratique', title: 'Guide maraîcher', introduction: "Principes pratiques pour une agriculture sahélienne économe en eau et respectueuse des sols.", buttonLabel: 'Fermer le guide' },
@@ -32,33 +32,21 @@ export const HOME_METRICS: MetricCard[] = [
     value: '+450 Ha',
     label: 'Terres cultivées',
     sublabel: 'Restauration Zaï',
-    icon: 'eco',
-    bgColor: 'bg-[#1b4332] text-white',
-    textColor: 'text-[#c1ecd4]',
   },
   {
     value: '38',
     label: 'Forages & Puits',
     sublabel: 'Adduction solaire',
-    icon: 'water_drop',
-    bgColor: 'bg-[#7d562d] text-white',
-    textColor: 'text-[#ffdcbd]',
   },
   {
     value: '+1 200',
     label: 'Têtes de bétail',
     sublabel: 'Embouche saine',
-    icon: 'cruelty_free',
-    bgColor: 'bg-[#dce5de] text-[#151d1a]',
-    textColor: 'text-[#414844]',
   },
   {
     value: '15 000+',
     label: 'Bénéficiaires',
     sublabel: 'Rayonnement provincial',
-    icon: 'groups',
-    bgColor: 'bg-[#00452e] text-white',
-    textColor: 'text-[#b1f0ce]',
   },
 ];
 
@@ -280,16 +268,10 @@ export const ELEVAGE_DATA = {
     title: 'Modernisation & Préservation Pastorale à Nagréogo',
     description: "Sous la vision du Cheick Bikienga Seydou, notre domaine pastoral réconcilie les savoirs sahéliens ancestraux et les technologies vétérinaires durables. Nous œuvrons pour l'autonomie en protéines animales et l'amélioration génétique ciblée des races locales emblématiques : zébus Azawak et Goudali, taurins Peuls et moutons Djallonké résistants.",
   },
-  filters: [
-    { id: 'all', label: 'Tout voir' },
-    { id: 'bovins', label: 'Bovins Azawak & Goudali' },
-    { id: 'ovins', label: 'Ovins Djallonké' },
-    { id: 'laiterie', label: 'Laiterie & Fourrage' },
-  ],
   stats: [
-    { value: '98.4%', label: 'Couverture vaccinale', icon: 'verified', bg: 'bg-[#c1ecd4] text-[#002114]' },
-    { value: '850 L', label: 'Lait frais / jour', icon: 'water_drop', bg: 'bg-[#ffca98] text-[#7a532a]' },
-    { value: '120 T', label: 'Foin & ensilage', icon: 'grass', bg: 'bg-[#e2eae4] text-[#012d1d]' },
+    { value: '98.4%', label: 'Couverture vaccinale' },
+    { value: '850 L', label: 'Lait frais / jour' },
+    { value: '120 T', label: 'Foin & ensilage' },
   ],
   videos: [
     {

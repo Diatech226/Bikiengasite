@@ -74,6 +74,21 @@ export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
     const amounts = data.suggestedAmounts as Array<Record<string, unknown>>;
     if (!amounts.every((amount) => typeof amount.value === 'number' && amount.value > 0 && typeof amount.label === 'string')) throw new BadRequestException('Chaque montant doit avoir une valeur positive et un libellé');
   }
+  if (key.endsWith('.page')) {
+    const requireStrings = (value: unknown, fields: readonly string[], path: string) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException(`${path} doit être un objet`);
+      const record = value as Record<string, unknown>;
+      for (const field of fields) if (typeof record[field] !== 'string' || !record[field].trim()) throw new BadRequestException(`${path}.${field} doit être un texte non vide`);
+    };
+    if (key !== 'home.page') requireStrings(data.header, ['badge', 'title', 'description'], `${key}.header`);
+    const stats = data[key === 'home.page' ? 'metrics' : 'stats'] as unknown[];
+    if (!Array.isArray(stats) || !stats.length) throw new BadRequestException(`${key} doit contenir au moins un indicateur`);
+    stats.forEach((stat, index) => requireStrings(stat, ['value', 'label'], `${key}.indicateurs[${index}]`));
+    if (key === 'elevage.page') {
+      const rules = data.rules as unknown[];
+      rules.forEach((rule, index) => requireStrings(rule, ['title', 'description'], `${key}.rules[${index}]`));
+    }
+  }
 }
 function clean<T extends Record<string, unknown>>(document: T) { const { _id, __v, ...value } = document; return { ...value, id: String(_id) }; }
 function cleanBlock<T extends { key: ContentKey; data: Record<string, unknown> } & Record<string, unknown>>(document: T) {
