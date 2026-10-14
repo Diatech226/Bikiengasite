@@ -29,11 +29,14 @@ type State = {
 const Context = createContext<State | null>(null);
 
 export function ContentProvider({ children }: { children: ReactNode }) {
-  const [blocks, setBlocks] = useState<Partial<ContentMap>>({});
-  const [items, setItems] = useState<MediaItem[]>([]);
-  const [status, setStatus] = useState<ContentStatus>('loading');
+  const [blocks, setBlocks] = useState<Partial<ContentMap>>(() => {
+    return Object.fromEntries(DEFAULT_CONTENT_PAYLOAD.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>;
+  });
+  const [items, setItems] = useState<MediaItem[]>(() => {
+    return DEFAULT_CONTENT_PAYLOAD.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order);
+  });
+  const [status, setStatus] = useState<ContentStatus>('loaded');
   const refresh = useCallback(async () => {
-    setStatus((current) => current === 'loaded' ? current : 'loading');
     try {
       const payload = await contentApi.public();
       const required = ['site.brand', 'site.navigation', 'site.footer', 'site.contact', 'site.profile', 'site.guide', 'site.donation', 'site.search', 'home.page', 'agriculture.page', 'elevage.page', 'humanitaire.page'];
@@ -42,8 +45,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       setItems(payload.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
       setStatus('loaded');
     } catch {
-      setBlocks(Object.fromEntries(DEFAULT_CONTENT_PAYLOAD.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>);
-      setItems(DEFAULT_CONTENT_PAYLOAD.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
+      // Keep or restore defaults smoothly without crashing
       setStatus('loaded');
     }
   }, []);
