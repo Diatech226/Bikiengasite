@@ -1,4 +1,4 @@
-export type TabType = 'accueil' | 'agriculture' | 'elevage' | 'humanitaire' | 'admin';
+export type TabType = 'accueil' | 'agriculture' | 'elevage' | 'humanitaire' | 'projets' | 'admin';
 
 export interface VideoItem {
   id: string;

@@ -57,7 +57,7 @@ async function toApiPayload(article: Partial<ArticlePayload>) {
   return payload;
 }
 
-const STORAGE_KEY_ARTICLES = 'nagreogo_blog_articles';
+const STORAGE_KEY_ARTICLES = 'nagreogo_blog_articles_v2';
 
 export function getLocalArticles(): ArticleItem[] {
   if (typeof window === 'undefined') return DEFAULT_ARTICLES;

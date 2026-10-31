@@ -62,10 +62,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
           {!submitted ? (
             <>
               <div>
-                <span className="font-label-sm text-[11px] font-bold text-[#7d562d] uppercase tracking-wider">
-                  {donation.eyebrow}
-                </span>
-                <h2 className="font-headline-sm text-xl text-[#012d1d] font-bold mt-1">
+                <h2 className="font-headline-sm text-xl text-[#012d1d] font-bold">
                   {donation.title}
                 </h2>
                 <p className="font-body-sm text-xs text-[#414844] mt-1">

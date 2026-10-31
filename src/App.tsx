@@ -18,6 +18,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { AgricultureScreen } from './screens/AgricultureScreen';
 import { ElevageScreen } from './screens/ElevageScreen';
 import { HumanitaireScreen } from './screens/HumanitaireScreen';
+import { ProjetsScreen } from './screens/ProjetsScreen';
 import { AdminScreen } from './features/admin/AdminScreen';
 import { ArticleItem, TabType, VideoItem } from './types';
 import { useToast } from './hooks/useToast';
@@ -37,9 +38,15 @@ export default function App() {
   const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [donationCategory, setDonationCategory] = useState<string | undefined>(undefined);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
+
+  const handleOpenDonation = (category?: string) => {
+    setDonationCategory(category);
+    setIsDonationOpen(true);
+  };
 
   const { message: toastMessage, showToast } = useToast();
   const { bookmarks, toggleBookmark: handleToggleBookmark } = useBookmarks(showToast);
@@ -83,7 +90,7 @@ export default function App() {
         onOpenProfile={() => setIsProfileOpen(true)}
         savedCount={bookmarks.length}
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
-        onOpenDonation={() => setIsDonationOpen(true)}
+        onOpenDonation={() => setCurrentTab('projets')}
       />
 
       {/* Main Responsive Content Container */}
@@ -94,10 +101,18 @@ export default function App() {
               articles={articles}
               onOpenVideo={(v) => setActiveVideo(v)}
               onOpenArticle={(a) => setActiveArticle(a)}
-              onOpenDonation={() => setIsDonationOpen(true)}
+              onOpenDonation={() => setCurrentTab('projets')}
+              onNavigateToProjects={() => setCurrentTab('projets')}
               articlesLoading={articlesLoading}
               articlesError={articlesError}
               onRetryArticles={() => void refreshArticles()}
+            />
+          )}
+
+          {currentTab === 'projets' && (
+            <ProjetsScreen
+              onSelectProject={(category) => handleOpenDonation(category)}
+              onBackToHome={() => setCurrentTab('accueil')}
             />
           )}
 
@@ -111,14 +126,14 @@ export default function App() {
           {currentTab === 'elevage' && (
             <ElevageScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenDonation={() => setIsDonationOpen(true)}
+              onOpenDonation={() => handleOpenDonation()}
             />
           )}
 
           {currentTab === 'humanitaire' && (
             <HumanitaireScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenDonation={() => setIsDonationOpen(true)}
+              onOpenDonation={() => setCurrentTab('projets')}
             />
           )}
 
@@ -157,9 +172,6 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-[#dce5de] leading-relaxed max-w-md">
-                {footer.description}
-              </p>
               <div className="flex items-center gap-2 text-xs text-[#ffdcbd]">
                 <span className="material-symbols-outlined text-[16px]">location_on</span>
                 <span>{contact.location}</span>
@@ -175,41 +187,6 @@ export default function App() {
               <h4 className="font-label-md text-sm font-bold uppercase tracking-wider text-[#ffca98]">
                 {footer.navigationTitle}
               </h4>
-              <ul className="flex flex-col gap-2 text-sm text-[#dce5de]">
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('accueil')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'accueil')?.footerLabel}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('agriculture')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'agriculture')?.footerLabel}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('elevage')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'elevage')?.footerLabel}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('humanitaire')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'humanitaire')?.footerLabel}
-                  </button>
-                </li>
-
-              </ul>
             </div>
 
             {/* Col 3: Engagement & Contact */}
@@ -217,9 +194,6 @@ export default function App() {
               <h4 className="font-label-md text-sm font-bold uppercase tracking-wider text-[#ffca98]">
                 {footer.supportTitle}
               </h4>
-              <p className="text-xs text-[#dce5de] leading-relaxed">
-                {footer.supportDescription}
-              </p>
               <div className="flex flex-col gap-2 mt-1">
                 <button
                   onClick={() => setIsDonationOpen(true)}
@@ -240,11 +214,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-[#dce5de]/70 gap-4">
+          <div className="pt-8 border-t border-white/10 text-center text-xs text-[#dce5de]/70">
             <p>{footer.copyright}</p>
-            <div className="flex items-center gap-4">
-              <span>{footer.signature}</span>
-            </div>
           </div>
         </div>
       </footer>
@@ -305,7 +276,13 @@ export default function App() {
 
         {/* Donation / Support Modal */}
         {isDonationOpen && (
-          <DonationModal onClose={() => setIsDonationOpen(false)} />
+          <DonationModal
+            onClose={() => {
+              setIsDonationOpen(false);
+              setDonationCategory(undefined);
+            }}
+            defaultCategory={donationCategory}
+          />
         )}
 
         {/* Search Modal */}
