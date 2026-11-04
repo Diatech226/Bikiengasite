@@ -40,8 +40,8 @@ export interface MediaItem { id?: string; slug: string; section: 'home'|'agricul
 export interface ContentPayload { blocks: ContentBlock[]; mediaItems: MediaItem[] }
 
 // Versioned public cache: older CMS shapes must not be replayed after a deployment.
-const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks_v4';
-const STORAGE_KEY_MEDIA = 'nagreogo_media_items_v4';
+const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks_v5';
+const STORAGE_KEY_MEDIA = 'nagreogo_media_items_v5';
 
 function getLocalPayload(): ContentPayload {
   if (typeof window === 'undefined') return DEFAULT_CONTENT_PAYLOAD;

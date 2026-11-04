@@ -18,7 +18,7 @@ export const SITE_CONTENT: Pick<ContentMap, 'site.brand' | 'site.navigation' | '
     items: [
       { id: 'accueil', label: 'Accueil', footerLabel: 'Accueil & Échos de la Révolution' },
       { id: 'agriculture', label: 'Agriculture', footerLabel: 'Offensive Agricole & Terres Fertiles' },
-      { id: 'elevage', label: 'Élevage', footerLabel: 'Souveraineté Pastorale & Élevage' },
+      { id: 'elevage', label: 'Poulet', footerLabel: 'Élevage de Poulets & Souveraineté' },
       { id: 'humanitaire', label: 'Solidarité', footerLabel: 'Solidarité Populaire & Bataille de l’Eau' },
     ],
     searchLabel: 'Rechercher dans les archives de la révolution…',

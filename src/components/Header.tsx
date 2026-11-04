@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChickenIcon } from './ChickenIcon';
 import { useContent } from '../features/content/ContentContext';
 import { SiteBrandContent, SiteNavigationContent, SiteProfileContent } from '../services/contentApi';
 import { TabType } from '../types';
@@ -69,12 +70,12 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <span
-                  className="material-symbols-outlined text-[19px]"
+                  className={item.tab === 'elevage' ? 'inline-flex items-center justify-center w-[19px] h-[19px]' : 'material-symbols-outlined text-[19px]'}
                   style={{
                     fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                   }}
                 >
-                  {item.icon}
+                  {item.tab === 'elevage' ? <ChickenIcon className="w-[19px] h-[19px]" filled={isActive} /> : item.icon}
                 </span>
                 <span className="hidden xl:inline">{item.label}</span>
               </button>
