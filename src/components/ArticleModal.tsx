@@ -1,3 +1,4 @@
+import { useDialog } from '../hooks/useDialog';
 import React, { useEffect } from 'react';
 import { ArticleItem } from '../types';
 import { articleApi } from '../services/articleApi';
@@ -19,6 +20,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onToggleBookmark,
   onShare,
 }) => {
+  const dialogRef = useDialog(onClose);
   const { get } = useContent(); const profile = get<SiteProfileContent>('site.profile');
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        role="dialog" aria-modal="true" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
+        ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="article-title" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header bar */}
@@ -69,7 +71,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
           {/* Title & Metadata */}
           <div>
-            <h2 className="font-headline-lg-mobile text-[1.4rem] text-[#012d1d] font-bold leading-tight">
+            <h2 id="article-title" className="font-headline-lg-mobile text-[1.4rem] text-[#012d1d] font-bold leading-tight">
               {article.title}
             </h2>
             <p className="text-xs text-[#7d562d] font-medium mt-1.5">

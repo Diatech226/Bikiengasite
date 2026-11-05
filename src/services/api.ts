@@ -30,7 +30,8 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, ret
   let response: Response;
   try {
     response = await fetch(`${API_URL}${path}`, { ...options, headers });
-  } catch {
+  } catch (cause) {
+    if (options.signal?.aborted) throw cause;
     throw new Error('API_UNAVAILABLE');
   }
 

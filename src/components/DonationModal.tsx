@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useDialog } from '../hooks/useDialog';
+import React, { useEffect, useState } from 'react';
 import { donationApi } from '../services/donationApi';
 import { useContent } from '../features/content/ContentContext';
 import { SiteDonationContent } from '../services/contentApi';
@@ -9,6 +10,7 @@ interface DonationModalProps {
 }
 
 export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
+  const dialogRef = useDialog(onClose);
   const { get } = useContent();
   const donation = get<SiteDonationContent>('site.donation');
   const categories = donation.categories || [];
@@ -24,6 +26,10 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
 
 
 
+  useEffect(() => {
+    if (submitted) dialogRef.current?.querySelector<HTMLElement>('[role="status"]')?.focus();
+  }, [submitted]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
     const numericAmount = category === 'materiel' ? undefined : Number(amount.replace(/[^0-9]/g, '')) || undefined;
@@ -35,7 +41,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        role="dialog" aria-modal="true" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
+        ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="donation-title" aria-describedby={submitted ? undefined : "donation-notice"} className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -44,7 +50,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
             <span className="material-symbols-outlined text-[#ffca98] text-[20px]">
               handshake
             </span>
-            <span className="font-label-md text-xs font-semibold tracking-wide text-[#ffdcbd]">
+            <span id="donation-title" className="font-label-md text-xs font-semibold tracking-wide text-[#ffdcbd]">
               {donation.badge}
             </span>
           </div>
@@ -65,17 +71,17 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 <h2 className="font-headline-sm text-xl text-[#012d1d] font-bold">
                   {donation.title}
                 </h2>
-                <p className="font-body-sm text-xs text-[#414844] mt-1">
-                  {donation.introduction}
+                <p id="donation-notice" className="font-body-sm text-xs text-[#414844] mt-1">
+                  Ce formulaire transmet une intention de soutien. Aucun paiement n’est effectué et aucun montant n’est débité.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
                 <div>
-                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
+                  <label htmlFor="donation-project" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                     {donation.projectLabel}
                   </label>
-                  <select
+                  <select id="donation-project"
                     value={category}
                     onChange={(e) => {
                       const nextCategory = e.target.value;
@@ -94,10 +100,10 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
+                    <label htmlFor="donation-name" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                       {donation.nameLabel}
                     </label>
-                    <input
+                    <input id="donation-name"
                       type="text"
                       required
                       value={name}
@@ -107,10 +113,10 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                     />
                   </div>
                   <div>
-                    <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
+                    <label htmlFor="donation-contact" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                       {donation.contactLabel}
                     </label>
-                    <input
+                    <input id="donation-contact"
                       type="tel"
                       required
                       value={contact}
@@ -122,19 +128,19 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 </div>
 
                 <div>
-                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">{donation.emailLabel}</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={donation.emailPlaceholder} className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
+                  <label htmlFor="donation-email" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">{donation.emailLabel}</label>
+                  <input id="donation-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={donation.emailPlaceholder} className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
                 </div>
 
                 {category !== 'materiel' && <div>
-                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
-                    {donation.amountLabel}
-                  </label>
+                  <fieldset>
+                  <legend className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">{donation.amountLabel}</legend>
                   <div className="grid grid-cols-3 gap-2">
                     {(donation.suggestedAmounts || []).map(({ label: val }) => (
                       <button
                         type="button"
                         key={val}
+                        aria-pressed={amount === val}
                         onClick={() => setAmount(val)}
                         className={`py-2 text-xs font-semibold rounded-lg border text-center transition-colors ${
                           amount === val
@@ -146,13 +152,14 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                       </button>
                     ))}
                   </div>
+                  </fieldset>
                 </div>}
 
                 <div>
-                  <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
+                  <label htmlFor="donation-message" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                     {donation.messageLabel}
                   </label>
-                  <textarea
+                  <textarea id="donation-message"
                     rows={2}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -168,25 +175,25 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   className="w-full h-12 disabled:opacity-60 rounded-xl bg-[#012d1d] text-white font-label-md text-sm font-bold shadow-md hover:bg-[#1b4332] transition-all flex items-center justify-center gap-2 mt-1 active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  <span>{loading ? 'Transmission…' : donation.submitLabel}</span>
+                  <span>{loading ? 'Transmission…' : 'Envoyer une intention de soutien — aucun débit'}</span>
                 </button>
               </form>
             </>
           ) : (
-            <div className="p-4 rounded-2xl bg-white border border-[#c1ecd4] shadow-sm flex flex-col gap-4 text-center items-center py-6 animate-in zoom-in-95">
+            <div role="status" tabIndex={-1} className="p-4 rounded-2xl bg-white border border-[#c1ecd4] shadow-sm flex flex-col gap-4 text-center items-center py-6 animate-in zoom-in-95">
               <div className="w-14 h-14 rounded-full bg-[#ffca98] text-[#7a532a] flex items-center justify-center">
                 <span className="material-symbols-outlined text-[32px]">favorite</span>
               </div>
 
               <div>
                 <span className="font-label-sm text-[11px] text-[#7d562d] uppercase tracking-wider font-bold">
-                  {donation.successBadge}
+                  Intention transmise
                 </span>
                 <h3 className="font-headline-sm text-xl text-[#012d1d] font-bold mt-1">
-                  {donation.successTitle?.replace('{name}', name)}
+                  Merci {name}, votre intention de soutien a été envoyée.
                 </h3>
                 <p className="font-body-sm text-xs text-[#414844] mt-1 max-w-sm mx-auto">
-                  {donation.successMessage?.replace('{category}', categories.find((c) => c.value === category)?.label || '').replace('{amount}', category !== 'materiel' ? `(${amount})` : '').replace('{contact}', contact)}
+                  Aucun paiement n’a été effectué. L’équipe pourra vous recontacter pour organiser votre soutien.
                 </p>
               </div>
 
