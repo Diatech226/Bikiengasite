@@ -1,9 +1,10 @@
+import { readingTime } from '../../utils/readingTime';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { contentApi, ContentMap, ContentStatus, MediaItem } from '../../services/contentApi';
+import { contentApi, getLocalPayload, ContentMap, ContentStatus, MediaItem } from '../../services/contentApi';
 import { DEFAULT_CONTENT_PAYLOAD } from '../../data/defaultContent';
 import { VideoItem } from '../../types';
 
-function toVideo(item: MediaItem): VideoItem {
+export function toVideo(item: MediaItem): VideoItem {
   return {
     id: item.slug, slug: item.slug, title: item.title,
     description: item.description,
@@ -11,9 +12,9 @@ function toVideo(item: MediaItem): VideoItem {
     image: item.imageUrl || '', alt: item.imageAlt || '',
     tagLabel: item.badge || '', tagIcon: item.metadata.tagIcon || 'article',
     category: item.metadata.category || item.section,
-    duration: item.metadata.duration || '', views: item.metric || '',
+    duration: readingTime(item.body || item.description), views: item.metric || '',
     badgeSubtitle: item.metadata.statusText || '', date: item.dateLabel || '',
-    actionText: item.buttonLabel || '', sector: item.section === 'home' ? 'humanitaire' : item.section,
+    actionText: 'Lire le reportage', sector: item.section === 'home' ? 'humanitaire' : item.section,
     stats: item.metadata.impactBox || item.metric, statsIcon: item.metadata.statsIcon,
   };
 }
@@ -35,8 +36,9 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<MediaItem[]>(() => {
     return DEFAULT_CONTENT_PAYLOAD.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order);
   });
-  const [status, setStatus] = useState<ContentStatus>('loaded');
+  const [status, setStatus] = useState<ContentStatus>('loading');
   const refresh = useCallback(async () => {
+    setStatus('loading');
     try {
       const payload = await contentApi.public();
       const required = ['site.brand', 'site.navigation', 'site.footer', 'site.contact', 'site.profile', 'site.guide', 'site.donation', 'site.search', 'home.page', 'agriculture.page', 'elevage.page', 'humanitaire.page'];
@@ -44,9 +46,13 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       setBlocks(Object.fromEntries(payload.blocks.map((block) => [block.key, block.data])) as Partial<ContentMap>);
       setItems(payload.mediaItems.filter((item) => item.isActive).sort((a, b) => a.order - b.order));
       setStatus('loaded');
-    } catch {
-      // Keep or restore defaults smoothly without crashing
-      setStatus('loaded');
+    } catch (cause) {
+      console.error('[content] Chargement impossible, utilisation du contenu local', cause);
+      const fallback = getLocalPayload();
+      const defaults = Object.fromEntries(DEFAULT_CONTENT_PAYLOAD.blocks.map(block => [block.key, block.data]));
+      setBlocks({ ...defaults, ...Object.fromEntries(fallback.blocks.map(block => [block.key, block.data])) } as Partial<ContentMap>);
+      setItems(fallback.mediaItems.filter(item => item.isActive).sort((a, b) => a.order - b.order));
+      setStatus('degraded');
     }
   }, []);
   useEffect(() => { void refresh(); }, [refresh]);

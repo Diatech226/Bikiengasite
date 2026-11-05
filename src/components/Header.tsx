@@ -1,3 +1,4 @@
+import { tabPath } from '../routing/routes';
 import React from 'react';
 import { ChickenIcon } from './ChickenIcon';
 import { useContent } from '../features/content/ContentContext';
@@ -60,9 +61,10 @@ export const Header: React.FC<HeaderProps> = ({
           {navItems.map((item) => {
             const isActive = currentTab === item.tab;
             return (
-              <button
+              <a
                 key={item.tab}
-                onClick={() => onTabChange(item.tab)}
+                href={tabPath(item.tab)}
+              onClick={(e) => { if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) { e.preventDefault(); onTabChange(item.tab); } }}
                 className={`flex items-center gap-2 px-3.5 lg:px-4 py-2 rounded-full font-label-md text-sm transition-all ${
                   isActive
                     ? 'bg-[#012d1d] text-white shadow-sm font-bold'
@@ -78,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {item.tab === 'elevage' ? <ChickenIcon className="w-[19px] h-[19px]" filled={isActive} /> : item.icon}
                 </span>
                 <span className="hidden xl:inline">{item.label}</span>
-              </button>
+              </a>
             );
           })}
         </nav>

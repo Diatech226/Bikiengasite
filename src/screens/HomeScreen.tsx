@@ -1,3 +1,4 @@
+import { readingTime } from '../utils/readingTime';
 import React, { useMemo, useState } from 'react';
 import { useContent } from '../features/content/ContentContext';
 import { ArticleItem, VideoItem } from '../types';
@@ -59,13 +60,13 @@ function toVideoItem(item: MediaItem): VideoItem {
     image: item.imageUrl || '',
     alt: item.imageAlt || '',
     tagLabel: item.badge || '',
-    tagIcon: item.metadata?.tagIcon || 'movie',
+    tagIcon: 'article',
     category: item.metadata?.category || item.section,
-    duration: item.metadata?.duration || '',
+    duration: readingTime(item.body || item.description),
     views: item.metric || '',
     badgeSubtitle: item.metadata?.statusText || '',
     date: item.dateLabel || '',
-    actionText: item.buttonLabel || 'Voir le reportage',
+    actionText: 'Lire le reportage',
     sector:
       item.section === 'home'
         ? item.badge?.toLowerCase().includes('agri')
@@ -116,13 +117,26 @@ export const HomeScreen: React.FC<Props> = ({ onOpenDonation, onNavigateToProjec
 
   return (
     <div className="public-page">
+      <section className="public-hero" aria-labelledby="home-title">
+        <p className="eyebrow">{page.badge}</p>
+        <h1 id="home-title" className="text-2xl sm:text-3xl font-bold text-[#012d1d] tracking-tight my-2">
+          {page.title}
+        </h1>
+        <p>{page.description}</p>
+        <div className="simple-actions">
+          <button className="primary-action" onClick={handleGoToProjects}>
+            {page.primaryButton}
+          </button>
+        </div>
+      </section>
+
       <section aria-labelledby="reportages-title" className="space-y-4">
         <div className="section-heading mb-4">
           <div>
             <p className="eyebrow">Front de la Terre &amp; Révolution Verte</p>
-            <h1 id="reportages-title" className="text-2xl sm:text-3xl font-bold text-[#012d1d]">
+            <h2 id="reportages-title" className="text-2xl sm:text-3xl font-bold text-[#012d1d]">
               Offensive Agricole
-            </h1>
+            </h2>
           </div>
           <span className="text-xs text-[#59625d] font-medium hidden sm:inline-block">
             {filteredVideos.length} reportage{filteredVideos.length > 1 ? 's' : ''}
@@ -175,7 +189,7 @@ export const HomeScreen: React.FC<Props> = ({ onOpenDonation, onNavigateToProjec
                 />
                 {video.duration && (
                   <span className="absolute bottom-2 right-2 bg-black/75 text-white text-[11px] font-medium px-2 py-0.5 rounded backdrop-blur-xs">
-                    {video.duration}
+                    Temps de lecture : {video.duration}
                   </span>
                 )}
               </div>
@@ -190,18 +204,6 @@ export const HomeScreen: React.FC<Props> = ({ onOpenDonation, onNavigateToProjec
         </div>
       </section>
 
-      <section className="public-hero" aria-labelledby="home-title">
-        <p className="eyebrow">{page.badge}</p>
-        <h2 id="home-title" className="text-2xl sm:text-3xl font-bold text-[#012d1d] tracking-tight my-2">
-          {page.title}
-        </h2>
-        <p>{page.description}</p>
-        <div className="simple-actions">
-          <button className="primary-action" onClick={handleGoToProjects}>
-            {page.primaryButton}
-          </button>
-        </div>
-      </section>
 
       <section aria-labelledby="impact-title">
         <div className="section-heading">
