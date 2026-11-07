@@ -7,6 +7,7 @@ import { VideoItem } from '../../types';
 export function toVideo(item: MediaItem): VideoItem {
   return {
     id: item.slug, slug: item.slug, title: item.title,
+    type: item.type || 'reportage',
     description: item.description,
     summary: item.description, fullText: item.body,
     image: item.imageUrl || '', alt: item.imageAlt || '',

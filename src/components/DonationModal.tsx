@@ -10,7 +10,7 @@ interface DonationModalProps {
   defaultMessage?: string;
 }
 
-export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
+export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory, defaultMessage }) => {
   const dialogRef = useDialog(onClose);
   const { get } = useContent();
   const donation = get<SiteDonationContent>('site.donation');

@@ -54,6 +54,7 @@ function toVideoItem(item: MediaItem): VideoItem {
     id: item.slug || item.id || '',
     slug: item.slug,
     title: item.title,
+    type: item.type || 'reportage',
     description: item.description,
     summary: item.description,
     fullText: item.body,
