@@ -108,7 +108,7 @@ export const ProjetsScreen: React.FC<ProjetsScreenProps> = ({ onSelectProject, o
   return (
     <div className="public-page">
       {/* Top Navigation & Header */}
-      <section className="public-hero" aria-labelledby="projets-title">
+      <section className="public-hero" aria-label="Chantiers populaires">
         <div className="mb-4">
           <button
             type="button"
@@ -121,10 +121,6 @@ export const ProjetsScreen: React.FC<ProjetsScreenProps> = ({ onSelectProject, o
         </div>
 
         <p className="eyebrow">{donation.badge || 'Chantiers Populaires • Nagréogo'}</p>
-        <h1 id="projets-title">Choisir le chantier populaire à soutenir</h1>
-        <p>
-          Chaque contribution va directement aux chantiers d’autosuffisance et de souveraineté populaire à Nagréogo, sous la conduite du Cheick Bikienga Seydou et des assemblées paysannes. Choisissez le front de la terre que vous souhaitez renforcer.
-        </p>
 
         {/* Categories Filter Tabs */}
         <div className="flex flex-wrap gap-2 mt-6 pt-2">

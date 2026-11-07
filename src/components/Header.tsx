@@ -97,23 +97,6 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="material-symbols-outlined text-[20px]">search</span>
           </button>
 
-          {/* Bookmarks */}
-          <button
-            onClick={onOpenBookmarks}
-            aria-label="Articles et reportages enregistrés"
-            className="relative hidden sm:flex w-10 h-10 items-center justify-center rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors"
-            title="Mes enregistrements"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              {savedCount > 0 ? 'bookmark' : 'bookmark_border'}
-            </span>
-            {savedCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#7d562d] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
-                {savedCount}
-              </span>
-            )}
-          </button>
-
           {/* Desktop Direct CTA Button */}
           <button
             onClick={onOpenDonation}

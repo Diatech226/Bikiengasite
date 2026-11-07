@@ -10,7 +10,7 @@ export const AgricultureScreen: React.FC<Props> = ({ onOpenVideo, onOpenGuide })
   const page = get<AgriculturePageContent>('agriculture.page');
   const stories = media('agriculture') as VideoItem[];
   return <div className="public-page">
-    <section className="public-hero"><p className="eyebrow">{page.header.badge}</p><h1>{page.header.title}</h1><p>{page.header.description}</p></section>
+    <section className="public-hero !py-2"><p className="eyebrow">{page.header.badge}</p></section>
     <section aria-label="Chiffres clés"><div className="metric-line">{page.stats.slice(0, 3).map((stat) => <div key={`${stat.value}-${stat.label}`}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div></section>
     <section><div className="section-heading"><h2>{page.storiesTitle}</h2></div><div className="editorial-grid">{stories.map((story) => <button type="button" className="editorial-item" key={story.id} onClick={() => onOpenVideo(story)}><img src={story.image} alt={story.alt}/><span className="eyebrow">{story.tagLabel}</span><strong>{story.title}</strong><p>{story.summary}</p></button>)}</div></section>
     <section className="useful-guide"><div><h2>{page.guideCard.title}</h2><p>{page.guideCard.description}</p></div><button className="primary-action" onClick={onOpenGuide}>{page.guideCard.buttonLabel}</button></section>
