@@ -1,7 +1,7 @@
 import { DEFAULT_CONTENT_PAYLOAD } from '../data/defaultContent';
 import { apiRequest } from './api';
 
-export type ContentStatus = 'loading' | 'loaded' | 'error';
+export type ContentStatus = 'loading' | 'loaded' | 'degraded' | 'error';
 export interface LabelValue { value: string; label: string }
 export interface NavigationItem { id: 'accueil'|'agriculture'|'elevage'|'humanitaire'; label: string; footerLabel: string }
 export interface SiteBrandContent { name: string; subtitle: string; logoUrl: string; logoAlt: string }
@@ -19,7 +19,6 @@ export interface HomePageContent {
   badge: string; title: string; description: string; primaryButton: string;
   quote: string; quoteAuthor: string; quoteCaption: string; impactTitle: string; impactPeriod: string;
   metrics: StatContent[]; storiesTitle: string; articlesEyebrow: string; articlesHeading: string;
-  projectsTitle: string; projectsDescription: string; projectsEmptyLabel: string; projectActionLabel: string; participateLabel: string;
   upcomingTitle: string; upcomingEyebrow: string; upcomingDescription: string;
   upcomingPrimaryButton: string; emptyArticlesTitle: string; emptyArticlesDescription: string;
   articlesLoadingLabel: string;
@@ -41,16 +40,19 @@ export interface MediaItem { id?: string; slug: string; section: 'home'|'agricul
 export interface ContentPayload { blocks: ContentBlock[]; mediaItems: MediaItem[] }
 
 // Versioned public cache: older CMS shapes must not be replayed after a deployment.
-const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks_v2';
-const STORAGE_KEY_MEDIA = 'nagreogo_media_items_v2';
+const STORAGE_KEY_BLOCKS = 'nagreogo_content_blocks_v5';
+const STORAGE_KEY_MEDIA = 'nagreogo_media_items_v5';
 
-function getLocalPayload(): ContentPayload {
+export function getLocalPayload(): ContentPayload {
   if (typeof window === 'undefined') return DEFAULT_CONTENT_PAYLOAD;
   try {
     const rawBlocks = window.localStorage.getItem(STORAGE_KEY_BLOCKS);
     const rawMedia = window.localStorage.getItem(STORAGE_KEY_MEDIA);
     const blocks: ContentBlock[] = rawBlocks ? JSON.parse(rawBlocks) : DEFAULT_CONTENT_PAYLOAD.blocks;
     const mediaItems: MediaItem[] = rawMedia ? JSON.parse(rawMedia) : DEFAULT_CONTENT_PAYLOAD.mediaItems;
+    if (!Array.isArray(blocks) || !Array.isArray(mediaItems)) return DEFAULT_CONTENT_PAYLOAD;
+    if (!blocks.every(block => block && typeof block.key === 'string' && block.data && typeof block.data === 'object')) return DEFAULT_CONTENT_PAYLOAD;
+    if (!mediaItems.every(item => item && typeof item.slug === 'string' && item.metadata && typeof item.metadata === 'object')) return DEFAULT_CONTENT_PAYLOAD;
     return { blocks, mediaItems };
   } catch {
     return DEFAULT_CONTENT_PAYLOAD;
@@ -71,15 +73,13 @@ function saveLocalMedia(items: MediaItem[]) {
 
 export const contentApi = {
   public: async (): Promise<ContentPayload> => {
-    try {
-      const result = await apiRequest<ContentPayload>('/content');
-      if (result && Array.isArray(result.blocks) && result.blocks.length > 0) {
-        saveLocalBlocks(result.blocks);
-        if (Array.isArray(result.mediaItems)) saveLocalMedia(result.mediaItems);
-        return result;
-      }
-    } catch {}
-    return getLocalPayload();
+    const result = await apiRequest<ContentPayload>('/content');
+    if (!result || !Array.isArray(result.blocks) || !result.blocks.length || !Array.isArray(result.mediaItems)) {
+      throw new Error('Réponse de contenu invalide');
+    }
+    saveLocalBlocks(result.blocks);
+    saveLocalMedia(result.mediaItems);
+    return result;
   },
   admin: (): Promise<ContentPayload> => apiRequest<ContentPayload>('/admin/content'),
   update: <K extends keyof ContentMap>(key: K, data: ContentMap[K]): Promise<ContentBlock<K>> =>

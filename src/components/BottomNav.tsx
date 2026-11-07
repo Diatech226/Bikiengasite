@@ -1,4 +1,6 @@
+import { tabPath } from '../routing/routes';
 import React from 'react';
+import { ChickenIcon } from './ChickenIcon';
 import { TabType } from '../types';
 import { useContent } from '../features/content/ContentContext';
 import { SiteNavigationContent } from '../services/contentApi';
@@ -19,9 +21,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onTabChange })
         {navItems.map((item) => {
           const isActive = currentTab === item.tab;
           return (
-            <button
+            <a
               key={item.tab}
-              onClick={() => onTabChange(item.tab)}
+              href={tabPath(item.tab)}
+              onClick={(e) => { if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) { e.preventDefault(); onTabChange(item.tab); } }}
               aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center justify-center gap-0.5 min-w-[70px] h-13 rounded-xl transition-all ${
                 isActive
@@ -30,12 +33,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onTabChange })
               }`}
             >
               <span
-                className="material-symbols-outlined text-[24px] transition-transform"
+                className={`flex items-center justify-center transition-transform ${item.tab === 'elevage' ? 'w-[24px] h-[24px]' : 'material-symbols-outlined text-[24px]'}`}
                 style={{
                   fontVariationSettings: isActive ? "'FILL' 1, 'wght' 600" : "'FILL' 0, 'wght' 400",
                 }}
               >
-                {item.icon}
+                {item.tab === 'elevage' ? <ChickenIcon className="w-[24px] h-[24px]" filled={isActive} /> : item.icon}
               </span>
               <span className="font-label-md text-[0.75rem] tracking-tight">
                 {item.label}
@@ -43,7 +46,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onTabChange })
               {isActive && (
                 <div className="w-1.5 h-1.5 rounded-full bg-[#7d562d] mt-0.5" />
               )}
-            </button>
+            </a>
           );
         })}
       </div>

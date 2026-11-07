@@ -57,7 +57,7 @@ async function toApiPayload(article: Partial<ArticlePayload>) {
   return payload;
 }
 
-const STORAGE_KEY_ARTICLES = 'nagreogo_blog_articles';
+const STORAGE_KEY_ARTICLES = 'nagreogo_blog_articles_v2';
 
 export function getLocalArticles(): ArticleItem[] {
   if (typeof window === 'undefined') return DEFAULT_ARTICLES;
@@ -68,7 +68,7 @@ export function getLocalArticles(): ArticleItem[] {
       return DEFAULT_ARTICLES;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ARTICLES;
+    return Array.isArray(parsed) ? parsed : DEFAULT_ARTICLES;
   } catch {
     return DEFAULT_ARTICLES;
   }
@@ -83,25 +83,18 @@ export function saveLocalArticles(articles: ArticleItem[]) {
 export const articleApi = {
   public: {
     async list(signal?: AbortSignal) {
-      try {
-        const result = await apiRequest<{ data: ApiArticle[] }>('/articles?limit=100', { signal });
-        if (result && Array.isArray(result.data)) {
-          const mapped = result.data.map(mapArticle);
-          saveLocalArticles(mapped);
-          return mapped;
-        }
-      } catch {}
-      return getLocalArticles().filter((a) => (a.status || 'published') === 'published');
+      const result = await apiRequest<{ data: ApiArticle[] }>('/articles?limit=100', { signal });
+      if (!result || !Array.isArray(result.data)) throw new Error('Réponse des articles invalide');
+      const mapped = result.data.map(mapArticle);
+      saveLocalArticles(mapped);
+      return mapped;
     },
     async featured(signal?: AbortSignal) {
-      try {
-        const result = await apiRequest<ApiArticle[]>('/articles/featured', { signal });
-        if (result && Array.isArray(result)) {
-          return result.map(mapArticle);
-        }
-      } catch {}
-      return getLocalArticles().filter((a) => a.isFeatured && (a.status || 'published') === 'published');
+      const result = await apiRequest<ApiArticle[]>('/articles/featured', { signal });
+      if (!Array.isArray(result)) throw new Error('Réponse des articles invalide');
+      return result.map(mapArticle);
     },
+    bySlug: async (slug: string, signal?: AbortSignal) => mapArticle(await apiRequest<ApiArticle>(`/articles/${encodeURIComponent(slug)}`, { signal })),
     view: (id: string) => apiRequest<{ counted: boolean }>(`/articles/${id}/view`, { method: 'POST' }),
   },
   admin: {
