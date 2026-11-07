@@ -20,7 +20,8 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
   onSelectArticle,
 }) => {
   const { media } = useContent();
-  const allVideos: VideoItem[] = (['home', 'agriculture', 'elevage', 'humanitaire'] as const).flatMap(media);
+  const allVideos: VideoItem[] = (['home', 'agriculture', 'elevage', 'humanitaire'] as const)
+    .flatMap((section) => media(section));
   const bookmarkedVideos = allVideos.filter((video) => bookmarks.includes(video.id));
   const bookmarkedArticles = articles.filter((article) => bookmarks.includes(article.id));
 
