@@ -32,9 +32,10 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="fixed top-0 w-full z-40 pt-safe bg-[#f3fbf5]/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.05)] border-b border-[#e2eae4]">
       <div className="max-w-7xl mx-auto h-16 md:h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
         {/* Brand Lockup */}
-        <div
+        <button type="button"
           onClick={() => onTabChange('accueil')}
-          className="flex items-center gap-3 min-w-0 cursor-pointer group"
+          aria-label="Retour à l’accueil"
+          className="flex items-center gap-2 sm:gap-3 min-w-0 text-left group"
         >
           <img
             alt={brand.logoAlt || ''}
@@ -43,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
             referrerPolicy="no-referrer"
           />
           <div className="flex flex-col min-w-0">
-            <span className="font-label-sm text-[0.6875rem] md:text-xs font-bold tracking-wider uppercase text-[#7d562d] truncate">
+            <span className="brand-subtitle font-label-sm text-[0.6875rem] md:text-xs font-bold tracking-wider uppercase text-[#7d562d] truncate">
               {brand.subtitle}
             </span>
             <div className="flex items-center gap-2">
@@ -55,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
@@ -79,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span className="hidden xl:inline">{item.label}</span>
               </button>
             );
           })}
@@ -103,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenBookmarks}
             aria-label="Articles et vidéos enregistrés"
-            className="relative w-10 h-10 flex items-center justify-center rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors"
+            className="relative hidden sm:flex w-10 h-10 items-center justify-center rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors"
             title="Mes enregistrements"
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -119,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Desktop Direct CTA Button */}
           <button
             onClick={onOpenDonation}
-            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffca98] text-[#7a532a] font-label-md text-xs lg:text-sm font-bold shadow-xs hover:bg-[#f0bd8b] transition-all active:scale-95"
+            className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffca98] text-[#7a532a] font-label-md text-xs lg:text-sm font-bold shadow-xs hover:bg-[#f0bd8b] transition-all active:scale-95"
           >
             <span className="material-symbols-outlined text-[17px]">volunteer_activism</span>
             <span>{navigation.supportLabel}</span>
@@ -129,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={() => onTabChange(currentTab === 'admin' ? 'accueil' : 'admin')}
             aria-label="Administration du Blog"
-            className={`flex items-center gap-1.5 px-3 py-1.5 md:py-2 rounded-full text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 md:py-2 rounded-full text-xs font-semibold transition-all ${
               currentTab === 'admin'
                 ? 'bg-[#012d1d] text-[#ffca98] ring-2 ring-[#ffca98] shadow-sm'
                 : 'text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] border border-[#c1c8c2]/50'
