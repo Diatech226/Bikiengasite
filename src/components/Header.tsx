@@ -117,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Desktop Direct CTA Button */}
           <button
             onClick={onOpenDonation}
-            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffca98] text-[#7a532a] font-label-md text-xs lg:text-sm font-bold shadow-xs hover:bg-[#f0bd8b] transition-all active:scale-95"
+            className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffca98] text-[#7a532a] font-label-md text-xs lg:text-sm font-bold shadow-xs hover:bg-[#f0bd8b] transition-all active:scale-95"
           >
             <span className="material-symbols-outlined text-[17px]">volunteer_activism</span>
             <span>{navigation.supportLabel}</span>

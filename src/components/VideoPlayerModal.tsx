@@ -8,6 +8,7 @@ interface Props { video: VideoItem | null; onClose: () => void; onReadArticle?: 
 export const VideoPlayerModal: React.FC<Props> = ({ video, onClose, onReadArticle, isBookmarked, onToggleBookmark, onShare }) => {
   const dialogRef = useDialog(onClose);
   if (!video) return null;
+  const contentType = video.type === 'projet' ? 'Chantier' : video.type === 'chronique' ? 'Chronique' : 'Reportage';
   return <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="reportage-title" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto border border-[#c1c8c2]">
       <header className="flex items-center justify-between px-4 py-3 bg-[#012d1d] text-white">

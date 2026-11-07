@@ -7,6 +7,7 @@ import { SiteDonationContent } from '../services/contentApi';
 interface DonationModalProps {
   onClose: () => void;
   defaultCategory?: string;
+  defaultMessage?: string;
 }
 
 export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
@@ -19,7 +20,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState(defaultCategory || 'forage');
   const [amount, setAmount] = useState(() => donation.suggestedAmounts?.[0]?.label || '');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(defaultMessage || '');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
