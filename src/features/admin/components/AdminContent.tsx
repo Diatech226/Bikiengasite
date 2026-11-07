@@ -7,7 +7,7 @@ type JsonValue = string | number | boolean | JsonObject | JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 
 const blockMeta: Record<keyof ContentMap, { group: string; label: string; preview: string; cards: Record<string, string> }> = {
-  'home.page': { group: 'CONTENU', label: 'Accueil', preview: 'accueil', cards: { badge: 'En-tête / Hero', quote: 'Citation', metrics: 'Statistiques', storiesTitle: 'Reportages', projectsTitle: 'Chantiers participatifs', articlesEyebrow: 'Articles', upcomingTitle: "Bannière d’engagement" } },
+  'home.page': { group: 'CONTENU', label: 'Accueil', preview: 'accueil', cards: { badge: 'En-tête / Hero', quote: 'Citation', metrics: 'Statistiques', storiesTitle: 'Reportages', articlesEyebrow: 'Articles', upcomingTitle: "Bannière d’engagement" } },
   'agriculture.page': { group: 'CONTENU', label: 'Agriculture', preview: 'agriculture', cards: { header: 'En-tête / Hero', stats: 'Statistiques', storiesTitle: 'Reportages', guideCard: 'Guide agricole' } },
   'elevage.page': { group: 'CONTENU', label: 'Élevage', preview: 'elevage', cards: { header: 'En-tête / Hero', stats: 'Statistiques', storiesTitle: 'Reportages', adviceTitle: "Conseils de l’éleveur", ctaTitle: "Bannière d’engagement" } },
   'humanitaire.page': { group: 'CONTENU', label: 'Humanitaire', preview: 'humanitaire', cards: { header: 'En-tête / Hero', stats: 'Statistiques', chroniclesTitle: 'Récits', actionTitle: "Bannière d’engagement" } },
