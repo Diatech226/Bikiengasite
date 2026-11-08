@@ -1,3 +1,4 @@
+import { useDialog } from '../hooks/useDialog';
 import React from 'react';
 import { VideoItem } from '../types';
 
@@ -5,15 +6,41 @@ interface Props { video: VideoItem | null; onClose: () => void; onReadArticle?: 
 
 /** A reportage reader. It deliberately contains no simulated video/audio controls. */
 export const VideoPlayerModal: React.FC<Props> = ({ video, onClose, onReadArticle, isBookmarked, onToggleBookmark, onShare }) => {
+  const dialogRef = useDialog(onClose);
   if (!video) return null;
   const contentType = video.type === 'projet' ? 'Chantier' : video.type === 'chronique' ? 'Chronique' : 'Reportage';
   return <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <article role="dialog" aria-modal="true" aria-label={contentType} className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto border border-[#c1c8c2]">
-      <header className="flex items-center justify-between px-4 py-3 bg-[#012d1d] text-white"><span className="text-xs font-bold text-[#ffdcbd]">{video.tagLabel} • {contentType}</span><button onClick={onClose} aria-label={`Fermer ${contentType.toLocaleLowerCase('fr')}`}><span className="material-symbols-outlined">close</span></button></header>
+    <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="reportage-title" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] overflow-y-auto border border-[#c1c8c2]">
+      <header className="flex items-center justify-between px-4 py-3 bg-[#012d1d] text-white">
+        <span className="text-xs font-semibold text-[#ffdcbd]">{video.tagLabel}</span>
+        <button onClick={onClose} aria-label="Fermer" className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/80 hover:text-white transition-colors">
+          <span className="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </header>
       <img src={video.image} alt={video.alt} className="w-full aspect-video object-cover" referrerPolicy="no-referrer" />
-      <div className="p-5 flex flex-col gap-4"><div><span className="text-xs font-bold uppercase text-[#7d562d]">{video.date}</span><h2 className="text-xl font-bold text-[#012d1d] leading-snug">{video.title}</h2></div><p className="text-sm text-[#414844] leading-relaxed whitespace-pre-line">{video.summary}</p>{video.stats && <p className="rounded-xl bg-[#e7f0ea] p-3 text-sm font-semibold text-[#012d1d]">{video.stats}</p>}
-        <div className="flex flex-wrap justify-between gap-2 border-t pt-4"><div className="flex gap-2"><button onClick={() => onToggleBookmark(video.id, video.title)} className="px-3 py-2 rounded-full bg-[#e7f0ea] text-xs font-semibold">{isBookmarked ? 'Enregistré' : 'Enregistrer'}</button><button onClick={() => onShare(video.title, video.summary)} className="px-3 py-2 rounded-full bg-[#e7f0ea] text-xs font-semibold">Partager</button></div>{onReadArticle && <button onClick={() => { onClose(); onReadArticle(video); }} className="px-4 py-2 rounded-full bg-[#012d1d] text-white text-xs font-semibold">{video.actionText}</button>}</div>
+      <div className="p-5 flex flex-col gap-4">
+        <div>
+          <span className="text-xs font-bold uppercase text-[#7d562d]">{video.date}</span>
+          <h2 id="reportage-title" className="text-xl font-bold text-[#012d1d] leading-snug mt-1">{video.title}</h2>
+        </div>
+        <p className="text-xs text-[#59625d]">Temps de lecture : {video.duration}</p>
+        <div className="space-y-3">{(video.fullText || video.summary).split('\n\n').map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
+        <div className="flex flex-wrap justify-between items-center gap-2 border-t border-[#dce5de] pt-4">
+          <div className="flex gap-2">
+            <button onClick={() => onToggleBookmark(video.id, video.title)} className="px-3.5 py-1.5 rounded-full bg-[#e7f0ea] text-xs font-semibold text-[#012d1d] hover:bg-[#dce5de] transition-colors">
+              {isBookmarked ? 'Enregistré' : 'Enregistrer'}
+            </button>
+            <button onClick={() => onShare(video.title, video.summary)} className="px-3.5 py-1.5 rounded-full bg-[#e7f0ea] text-xs font-semibold text-[#012d1d] hover:bg-[#dce5de] transition-colors">
+              Partager
+            </button>
+          </div>
+          {onReadArticle && (
+            <button onClick={() => { onClose(); onReadArticle(video); }} className="px-4 py-1.5 rounded-full bg-[#012d1d] text-white text-xs font-semibold hover:bg-[#1b4332] transition-colors">
+              {video.actionText}
+            </button>
+          )}
+        </div>
       </div>
-    </article>
+    </div>
   </div>;
 };

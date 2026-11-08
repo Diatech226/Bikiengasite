@@ -17,10 +17,11 @@ export function useArticles() {
       setArticles(list);
       setError(null);
     } catch (cause) {
-      if (cause instanceof DOMException && cause.name === 'AbortError') return;
+      if (signal?.aborted) return;
+      console.error('[articles] Chargement impossible, utilisation des articles locaux', cause);
       // Fallback to local articles
       setArticles(getLocalArticles().filter((a) => (a.status || 'published') === 'published'));
-      setError(null);
+      setError('Articles locaux : leur actualité ne peut pas être vérifiée.');
     } finally {
       if (!signal?.aborted) setLoading(false);
     }

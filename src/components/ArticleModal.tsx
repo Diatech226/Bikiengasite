@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useDialog } from '../hooks/useDialog';
+import React, { useEffect } from 'react';
 import { ArticleItem } from '../types';
 import { articleApi } from '../services/articleApi';
 import { useContent } from '../features/content/ContentContext';
@@ -19,8 +20,8 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onToggleBookmark,
   onShare,
 }) => {
+  const dialogRef = useDialog(onClose);
   const { get } = useContent(); const profile = get<SiteProfileContent>('site.profile');
-  const [fontSizeLarge, setFontSizeLarge] = useState(false);
 
   useEffect(() => {
     if (!article || !/^[a-f\d]{24}$/i.test(article.id)) return;
@@ -34,7 +35,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        role="dialog" aria-modal="true" aria-label="Lecture de l’article" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
+        ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="article-title" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header bar */}
@@ -44,84 +45,42 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               menu_book
             </span>
             <span className="font-label-md text-xs font-semibold tracking-wide text-[#ffdcbd] truncate">
-              {article.category || 'Paroles & Récits de Nagréogo'}
+              {article.category || 'Nagréogo'}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setFontSizeLarge(!fontSizeLarge)}
-              aria-label="Ajuster la taille du texte"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10"
-              title="Ajuster la taille du texte"
-            >
-              <span className="font-bold text-xs">A{fontSizeLarge ? '-' : '+'}</span>
-            </button>
-            <button
-              onClick={onClose}
-              aria-label="Fermer la lecture"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[20px]">close</span>
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            aria-label="Fermer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
         </div>
 
         {/* Scrollable Article Body */}
         <div className="overflow-y-auto p-4 sm:p-6 flex flex-col gap-4">
           {/* Hero Image */}
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm bg-[#e2eae4]">
+          <div className="w-full aspect-video rounded-xl overflow-hidden shadow-sm bg-[#e2eae4]">
             <img
               src={article.image}
               alt={article.alt}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-label-sm">
-              <span className="bg-[#012d1d]/80 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                {article.date}
-              </span>
-              <span className="flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                <span className="material-symbols-outlined text-[13px]">schedule</span>
-                {article.readTime}
-              </span>
-            </div>
           </div>
 
           {/* Title & Metadata */}
           <div>
-            <h2 className="font-headline-lg-mobile text-[1.5rem] text-[#012d1d] font-bold leading-tight">
+            <h2 id="article-title" className="font-headline-lg-mobile text-[1.4rem] text-[#012d1d] font-bold leading-tight">
               {article.title}
             </h2>
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#dce5de]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[#ffca98] text-[#7a532a] flex items-center justify-center font-bold text-xs">
-                  {(article.author || profile.name || '').split(/\s+/).map((part) => part[0]).slice(0, 2).join('')}
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-xs font-bold text-[#012d1d]">
-                    {article.author || profile.name}
-                  </span>
-                  {profile.title && <span className="text-[11px] text-[#7d562d]">{profile.title}</span>}
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Excerpt callout */}
-          <div className="p-3.5 rounded-xl bg-[#edf6ef] border-l-4 border-[#7d562d]">
-            <p className="font-headline-md italic text-sm text-[#012d1d] leading-relaxed">
-              « {article.excerpt} »
+            <p className="text-xs text-[#7d562d] font-medium mt-1.5">
+              {article.date} · {article.author || profile.name}
             </p>
           </div>
 
           {/* Main Full Text */}
-          <div
-            className={`font-body-md text-[#414844] space-y-3 leading-relaxed ${
-              fontSizeLarge ? 'text-[1.0625rem] leading-8' : 'text-[0.9375rem] leading-7'
-            }`}
-          >
+          <div className="font-body-md text-[#414844] space-y-3 leading-relaxed text-[0.9375rem]">
             {article.fullText ? (
               article.fullText.split('\n\n').map((paragraph, index) => {
                 if (paragraph.startsWith('- ')) {

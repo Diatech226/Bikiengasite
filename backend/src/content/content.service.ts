@@ -28,7 +28,7 @@ const requiredFields: Record<ContentKey, Record<string, 'string'|'array'|'object
   'site.guide': { title: 'string', introduction: 'string', buttonLabel: 'string' },
   'site.donation': { badge: 'string', title: 'string', introduction: 'string', categories: 'array', suggestedAmounts: 'array' },
   'site.search': { placeholder: 'string', suggestions: 'array', mediaTitle: 'string', articlesTitle: 'string' },
-  'home.page': { title: 'string', metrics: 'array', storiesTitle: 'string', projectsTitle: 'string', projectsDescription: 'string', projectsEmptyLabel: 'string', projectActionLabel: 'string', participateLabel: 'string' },
+  'home.page': { title: 'string', metrics: 'array', storiesTitle: 'string' },
   'agriculture.page': { header: 'object', stats: 'array', storiesTitle: 'string', guideCard: 'object' },
   'elevage.page': { header: 'object', stats: 'array', storiesTitle: 'string', adviceTitle: 'string', rules: 'array' },
   'humanitaire.page': { header: 'object', stats: 'array', chroniclesTitle: 'string', actionTitle: 'string' },
@@ -43,48 +43,14 @@ const allowedFields: Record<ContentKey, readonly string[]> = {
   'site.guide': ['badge', 'title', 'introduction', 'buttonLabel'],
   'site.donation': ['badge', 'eyebrow', 'title', 'introduction', 'projectLabel', 'nameLabel', 'namePlaceholder', 'contactLabel', 'contactPlaceholder', 'emailLabel', 'emailPlaceholder', 'amountLabel', 'messageLabel', 'messagePlaceholder', 'submitLabel', 'successBadge', 'successTitle', 'successMessage', 'categories', 'suggestedAmounts'],
   'site.search': ['placeholder', 'suggestionsTitle', 'mediaTitle', 'articlesTitle', 'emptyMessage', 'suggestions'],
-  'home.page': ['badge', 'title', 'description', 'primaryButton', 'quote', 'quoteAuthor', 'quoteCaption', 'impactTitle', 'impactPeriod', 'metrics', 'storiesTitle', 'projectsTitle', 'projectsDescription', 'projectsEmptyLabel', 'projectActionLabel', 'participateLabel', 'articlesEyebrow', 'articlesHeading', 'upcomingTitle', 'upcomingEyebrow', 'upcomingDescription', 'upcomingPrimaryButton', 'emptyArticlesTitle', 'emptyArticlesDescription', 'articlesLoadingLabel', 'articlesErrorLabel', 'retryLabel'],
+  'home.page': ['badge', 'title', 'description', 'primaryButton', 'quote', 'quoteAuthor', 'quoteCaption', 'impactTitle', 'impactPeriod', 'metrics', 'storiesTitle', 'articlesEyebrow', 'articlesHeading', 'upcomingTitle', 'upcomingEyebrow', 'upcomingDescription', 'upcomingPrimaryButton', 'emptyArticlesTitle', 'emptyArticlesDescription', 'articlesLoadingLabel', 'articlesErrorLabel', 'retryLabel'],
   'agriculture.page': ['header', 'stats', 'storiesTitle', 'guideCard'],
   'elevage.page': ['header', 'stats', 'storiesTitle', 'adviceTitle', 'rules', 'ctaTitle', 'ctaDescription', 'donationButton'],
   'humanitaire.page': ['header', 'stats', 'chroniclesTitle', 'chroniclesSubtitle', 'actionTitle', 'actionSubtitle', 'actionDescription', 'donationButton', 'contactButton'],
 };
 
-const addedFieldDefaults: Partial<Record<ContentKey, Record<string, unknown>>> = {
-  'home.page': { projectsTitle: 'Chantiers auxquels participer', projectsDescription: 'Consultez les besoins, l’action prévue et l’état de chaque chantier publié par l’équipe.', projectsEmptyLabel: 'Aucun chantier ouvert actuellement. Les prochains besoins seront publiés ici.', projectActionLabel: 'Voir le chantier', participateLabel: 'Participer à ce chantier' },
-  'agriculture.page': { storiesTitle: 'Réalisations et reportages' },
-  'elevage.page': { storiesTitle: 'Pratiques et réalisations', adviceTitle: 'Conseils essentiels' },
-  'humanitaire.page': { contactButton: 'Contacter le secrétariat' },
-};
-
-function pick(value: unknown, fields: readonly string[]) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-  const source = value as Record<string, unknown>;
-  return Object.fromEntries(fields.filter((field) => field in source).map((field) => [field, source[field]]));
-}
-
-function normalizeNestedFields(key: ContentKey, data: Record<string, unknown>) {
-  const normalized = { ...data };
-  if (key !== 'home.page' && key.endsWith('.page') && 'header' in data) {
-    normalized.header = pick(data.header, ['badge', 'title', 'description']);
-  }
-  if (key.endsWith('.page') && Array.isArray(data.stats)) {
-    normalized.stats = data.stats.map((stat) =>
-      pick(stat, key === 'home.page' ? ['value', 'label', 'sublabel'] : key === 'agriculture.page' ? ['value', 'label', 'sub'] : ['value', 'label']),
-    );
-  }
-  if (key === 'elevage.page' && Array.isArray(data.rules)) {
-    normalized.rules = data.rules.map((rule) => {
-      const source = rule && typeof rule === 'object' ? rule as Record<string, unknown> : {};
-      return { title: source.title, description: source.description ?? source.desc };
-    });
-  }
-  return normalized;
-}
-
 export function sanitizeForKey(key: ContentKey, data: Record<string, unknown>) {
-  const withDefaults = { ...addedFieldDefaults[key], ...data };
-  const allowed = Object.fromEntries(allowedFields[key].filter((field) => field in withDefaults).map((field) => [field, withDefaults[field]]));
-  return normalizeNestedFields(key, allowed);
+  return Object.fromEntries(allowedFields[key].filter((field) => field in data).map((field) => [field, data[field]]));
 }
 export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   for (const [field, expected] of Object.entries(requiredFields[key])) {

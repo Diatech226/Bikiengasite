@@ -2,24 +2,60 @@
 
 Application React/Vite servie séparément d'une API NestJS, avec MongoDB/Mongoose. En production, le navigateur communique en HTTPS avec l'API, qui seule accède à MongoDB Atlas.
 
-## Environnements et démarrage local
+## Installation locale
 
-- **Développement** : MongoDB local via Compose, Swagger actif, URLs localhost.
-- **Test** : variables isolées et base dédiée ; ne jamais pointer les tests vers la production.
-- **Production** : HTTPS, Atlas, secrets fournis par la plateforme, Swagger désactivé par défaut.
+### Prérequis
+
+- **Node.js 22.14.0 LTS** (la branche supportée est `>=22.12.0 <23`) ; `nvm use` lit la version fixée dans `.nvmrc` ;
+- **npm 10.9.2** (déclaré par `packageManager`) ;
+- Docker/Compose pour MongoDB local, ou une instance MongoDB compatible accessible par URI.
+
+Les versions majeures sont volontairement bornées et les dépendances directes sont fixées précisément. N'utilisez ni `--force` ni `--legacy-peer-deps`. Les fichiers `.npmrc` limitent les nouvelles tentatives et le délai réseau afin qu'une registry, un proxy ou un DNS indisponible échoue clairement au lieu de donner l'impression que l'installation est bloquée.
+
+### Frontend
 
 ```bash
+nvm install                 # une seule fois ; installe la version de .nvmrc
+nvm use
 cp .env.example .env
-cp backend/.env.example backend/.env
-docker compose up -d mongo
-npm ci && npm run dev
-# autre terminal
-cd backend && npm ci && npm run seed && npm run dev
+npm ci
+npm run lint
+npm run dev                 # http://localhost:3000
 ```
 
-Frontend : `VITE_API_URL` uniquement (par défaut local dans `.env.example`). Toute variable `VITE_*` est publique dans le bundle : n'y placez jamais URI MongoDB, secret JWT ou mot de passe. Backend : voir `backend/.env.example`. Générez **trois valeurs distinctes** pour `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` et `VIEW_HASH_SECRET` avec trois exécutions de `openssl rand -hex 32`.
+Le frontend requiert uniquement `VITE_API_URL` (par défaut `http://localhost:5000/api/v1`). Toute variable `VITE_*` est publique dans le bundle : n'y placez jamais une URI MongoDB, un secret JWT ou un mot de passe.
 
-Le seed est volontaire : `cd backend && npm run seed`. Il crée l'admin seulement s'il n'existe pas et ne réinitialise donc jamais silencieusement son mot de passe. Pour changer celui-ci, utilisez une procédure administrative explicite (ou supprimez volontairement le compte avant un nouveau seed).
+### Backend et base locale
+
+```bash
+cp backend/.env.example backend/.env
+docker compose up -d mongo
+cd backend
+npm ci
+npm run lint
+npm run seed                # explicite et idempotent
+npm run dev                 # http://localhost:5000
+```
+
+Variables backend nécessaires : `MONGODB_URI`, `FRONTEND_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN`, `VIEW_HASH_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_FIRST_NAME` et `ADMIN_LAST_NAME`. `PORT`, `NODE_ENV` et `ENABLE_SWAGGER` disposent de valeurs adaptées dans l'exemple. Générez **trois valeurs distinctes** pour les secrets avec trois exécutions de `openssl rand -hex 32`.
+
+Le seed crée l'administrateur seulement s'il n'existe pas et ne réinitialise jamais silencieusement son mot de passe. Pour le changer, utilisez une procédure administrative explicite (ou supprimez volontairement le compte avant un nouveau seed).
+
+### Nettoyer une installation corrompue
+
+Les commandes suivantes sont portables entre Windows, Linux et macOS (elles utilisent Node plutôt que `rm -rf`) :
+
+```bash
+node -e "require('fs').rmSync('node_modules',{recursive:true,force:true})"
+npm cache verify
+npm ci
+cd backend
+node -e "require('fs').rmSync('node_modules',{recursive:true,force:true})"
+npm cache verify
+npm ci
+```
+
+Conservez les deux `package-lock.json` versionnés. Ne les supprimez pas et ne remplacez pas `npm ci` par `npm install` dans l'intégration continue. Si une installation échoue sur un téléchargement, vérifiez d'abord `npm config get registry`, le proxy et l'accès à `https://registry.npmjs.org/` ; le délai configuré est de 60 secondes.
 
 ## Builds, tests et Docker
 
