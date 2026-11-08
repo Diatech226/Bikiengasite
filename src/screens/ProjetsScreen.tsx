@@ -120,6 +120,7 @@ export const ProjetsScreen: React.FC<ProjetsScreenProps> = ({ onSelectProject, o
           </button>
         </div>
 
+        <h1 className="text-3xl font-bold text-[#012d1d]">Soutenir un chantier</h1>
         <p className="eyebrow">{donation.badge || 'Chantiers Populaires • Nagréogo'}</p>
 
         {/* Categories Filter Tabs */}
@@ -127,6 +128,7 @@ export const ProjetsScreen: React.FC<ProjetsScreenProps> = ({ onSelectProject, o
           <button
             type="button"
             onClick={() => setSelectedFilter('all')}
+            aria-pressed={selectedFilter === 'all'}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
               selectedFilter === 'all'
                 ? 'bg-[#012d1d] text-white shadow-xs'
@@ -140,6 +142,7 @@ export const ProjetsScreen: React.FC<ProjetsScreenProps> = ({ onSelectProject, o
               type="button"
               key={proj.category}
               onClick={() => setSelectedFilter(proj.category)}
+              aria-pressed={selectedFilter === proj.category}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 selectedFilter === proj.category
                   ? 'bg-[#012d1d] text-white shadow-xs'
@@ -229,7 +232,7 @@ export const ProjetsScreen: React.FC<ProjetsScreenProps> = ({ onSelectProject, o
             className="primary-action"
             onClick={() => onSelectProject('forage')}
           >
-            Faire un don direct
+            Transmettre une intention de soutien
           </button>
           <button
             type="button"

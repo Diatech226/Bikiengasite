@@ -65,14 +65,14 @@ export function validateForKey(key: ContentKey, data: Record<string, unknown>) {
   for (const [field, allowed] of Object.entries(allowedValues[key] || {})) {
     const values = data[field] as Array<Record<string, unknown>>;
     const identifier = key === 'site.navigation' || field === 'filters' ? 'id' : 'value';
-    const identifiers = values.map((entry) => String(entry[identifier]));
-    if (identifiers.length !== allowed.length || new Set(identifiers).size !== allowed.length || !allowed.every((id) => identifiers.includes(id)) || !values.every((entry) => typeof entry.label === 'string')) {
+    const identifiers = values.map((entry) => String(entry?.[identifier]));
+    if (identifiers.length !== allowed.length || new Set(identifiers).size !== allowed.length || !allowed.every((id) => identifiers.includes(id)) || !values.every((entry) => typeof entry?.label === 'string')) {
       throw new BadRequestException(`Les identifiants techniques de ${key}.${field} ne peuvent pas être modifiés`);
     }
   }
   if (key === 'site.donation') {
     const amounts = data.suggestedAmounts as Array<Record<string, unknown>>;
-    if (!amounts.every((amount) => typeof amount.value === 'number' && amount.value > 0 && typeof amount.label === 'string')) throw new BadRequestException('Chaque montant doit avoir une valeur positive et un libellé');
+    if (!amounts.every((amount) => amount && typeof amount.value === 'number' && Number.isFinite(amount.value) && amount.value > 0 && amount.value <= 999999999 && Math.round(amount.value * 100) / 100 === amount.value && typeof amount.label === 'string' && amount.label.trim()) || new Set(amounts.map(amount => amount.value)).size !== amounts.length) throw new BadRequestException('Chaque montant doit avoir une valeur positive unique, au plus deux décimales, un maximum de 999999999 et un libellé non vide');
   }
   if (key.endsWith('.page')) {
     const requireStrings = (value: unknown, fields: readonly string[], path: string) => {

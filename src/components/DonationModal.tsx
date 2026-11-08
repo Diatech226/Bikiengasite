@@ -1,7 +1,8 @@
 import { useDialog } from '../hooks/useDialog';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { donationApi } from '../services/donationApi';
 import { useContent } from '../features/content/ContentContext';
+import { supportAmount, supportCategory } from '../utils/support';
 import { SiteDonationContent } from '../services/contentApi';
 
 interface DonationModalProps {
@@ -18,25 +19,43 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [email, setEmail] = useState('');
-  const [category, setCategory] = useState(defaultCategory || 'forage');
-  const [amount, setAmount] = useState(() => donation.suggestedAmounts?.[0]?.label || '');
+  const [category, setCategory] = useState(supportCategory(categories, defaultCategory));
+  const [amount, setAmount] = useState<number | undefined>();
+  const submitting = useRef(false);
   const [message, setMessage] = useState(defaultMessage || '');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
 
+  useEffect(() => {
+    setCategory(current => supportCategory(categories, current));
+    setAmount(current => supportAmount(donation.suggestedAmounts || [], category, current));
+  }, [donation, category]);
 
   useEffect(() => {
     if (submitted) dialogRef.current?.querySelector<HTMLElement>('[role="status"]')?.focus();
   }, [submitted]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
-    const numericAmount = category === 'materiel' ? undefined : Number(amount.replace(/[^0-9]/g, '')) || undefined;
-    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: numericAmount, message: message.trim() || undefined }); setSubmitted(true); }
-    catch (err) { setError(err instanceof Error ? err.message : 'La demande n’a pas pu être transmise.'); }
-    finally { setLoading(false); }
+    e.preventDefault();
+    if (submitting.current) return;
+    if (name.trim().length < 2 || contact.trim().length < 6 || !categories.some(item => item.value === category)) {
+      setError('Indiquez votre nom, un contact valide et le chantier à soutenir.');
+      return;
+    }
+    submitting.current = true;
+    setLoading(true);
+    setError('');
+    try {
+      await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: supportAmount(donation.suggestedAmounts || [], category, amount), message: message.trim() || undefined });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error && err.message !== 'API_UNAVAILABLE' ? err.message : 'Le service est momentanément indisponible. Votre intention n’a pas été envoyée. Réessayez ou contactez l’équipe directement.');
+    } finally {
+      submitting.current = false;
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,12 +101,12 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   <label htmlFor="donation-project" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                     {donation.projectLabel}
                   </label>
-                  <select id="donation-project"
+                  <select id="donation-project" required disabled={loading}
                     value={category}
                     onChange={(e) => {
                       const nextCategory = e.target.value;
                       setCategory(nextCategory);
-                      if (nextCategory === 'materiel') setAmount('');
+                      if (nextCategory === 'materiel') setAmount(undefined);
                     }}
                     className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs font-medium text-[#151d1a] focus:outline-none focus:ring-2 focus:ring-[#7d562d]"
                   >
@@ -106,7 +125,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                     </label>
                     <input id="donation-name"
                       type="text"
-                      required
+                      required minLength={2} maxLength={120} disabled={loading}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={donation.namePlaceholder}
@@ -119,7 +138,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                     </label>
                     <input id="donation-contact"
                       type="tel"
-                      required
+                      required minLength={6} maxLength={80} disabled={loading}
                       value={contact}
                       onChange={(e) => setContact(e.target.value)}
                       placeholder={donation.contactPlaceholder}
@@ -130,21 +149,22 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
 
                 <div>
                   <label htmlFor="donation-email" className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">{donation.emailLabel}</label>
-                  <input id="donation-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={donation.emailPlaceholder} className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
+                  <input id="donation-email" type="email" maxLength={254} disabled={loading} value={email} onChange={(e) => setEmail(e.target.value)} placeholder={donation.emailPlaceholder} className="w-full h-11 px-3 rounded-lg border border-[#c1c8c2] bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#7d562d]" />
                 </div>
 
                 {category !== 'materiel' && <div>
                   <fieldset>
                   <legend className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">{donation.amountLabel}</legend>
                   <div className="grid grid-cols-3 gap-2">
-                    {(donation.suggestedAmounts || []).map(({ label: val }) => (
+                    {(donation.suggestedAmounts || []).map(({ value, label: val }) => (
                       <button
                         type="button"
-                        key={val}
-                        aria-pressed={amount === val}
-                        onClick={() => setAmount(val)}
+                        key={value}
+                        aria-pressed={amount === value}
+                        disabled={loading}
+                        onClick={() => setAmount(value)}
                         className={`py-2 text-xs font-semibold rounded-lg border text-center transition-colors ${
-                          amount === val
+                          amount === value
                             ? 'bg-[#012d1d] text-white border-[#012d1d]'
                             : 'bg-white text-[#414844] border-[#c1c8c2]'
                         }`}
@@ -161,7 +181,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                     {donation.messageLabel}
                   </label>
                   <textarea id="donation-message"
-                    rows={2}
+                    rows={2} maxLength={2000} disabled={loading}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder={donation.messagePlaceholder}
