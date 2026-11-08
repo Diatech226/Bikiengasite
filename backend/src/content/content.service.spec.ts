@@ -92,3 +92,24 @@ describe('ContentService', () => {
     expect(properties).toEqual(expect.arrayContaining(['section', 'type', 'imageUrl', 'order', 'title']));
   });
 });
+
+
+describe('montants de soutien configurés dans le CMS', () => {
+  const content = (suggestedAmounts: unknown[]) => ({
+    badge: 'Soutenir', title: 'Soutenir un chantier', introduction: 'Intention de soutien',
+    categories: ['forage', 'cereales', 'orphelins', 'arbres', 'materiel'].map(value => ({ value, label: value })),
+    suggestedAmounts,
+  });
+  it('accepte les libellés indépendants des montants et les montants facultatifs', () => {
+    expect(() => validateForKey('site.donation', content([{ value: 15000, label: 'Pack de 3 arbres' }]))).not.toThrow();
+    expect(() => validateForKey('site.donation', content([]))).not.toThrow();
+  });
+  it('refuse les montants inutilisables par le formulaire ou l’API', () => {
+    for (const value of [0, -1, Infinity, NaN, 1000000000, 1.234]) {
+      expect(() => validateForKey('site.donation', content([{ value, label: 'Soutien' }]))).toThrow(BadRequestException);
+    }
+    for (const amounts of [[null], [{ value: 15000, label: ' ' }], [{ value: 15000, label: 'A' }, { value: 15000, label: 'B' }]]) {
+      expect(() => validateForKey('site.donation', content(amounts))).toThrow(BadRequestException);
+    }
+  });
+});
