@@ -13,6 +13,8 @@ export class Donation {
   @Prop({ min: 0 }) amount?: number;
   @Prop({ default: 'XOF' }) currency: string;
   @Prop() message?: string;
+  @Prop({ trim: true, maxlength: 120, index: true }) projectSlug?: string;
+  @Prop({ trim: true, maxlength: 180 }) projectTitle?: string;
   @Prop({ type: String, enum: DonationStatus, default: DonationStatus.PENDING }) status: DonationStatus;
   createdAt: Date;
   updatedAt: Date;

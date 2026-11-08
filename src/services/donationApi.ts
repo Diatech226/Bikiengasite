@@ -1,11 +1,11 @@
 import { apiRequest } from './api';
 export type DonationStatus = 'PENDING' | 'CONTACTED' | 'CONFIRMED' | 'RECEIVED' | 'CANCELLED';
-export interface Donation { id: string; donorName: string; donorContact: string; donorEmail?: string; type: string; amount?: number; currency: string; message?: string; status: DonationStatus; createdAt: string; }
+export interface Donation { id: string; donorName: string; donorContact: string; donorEmail?: string; type: string; amount?: number; currency: string; message?: string; projectSlug?: string; projectTitle?: string; status: DonationStatus; createdAt: string; }
 export interface Page<T> { data: T[]; meta: { page: number; limit: number; total: number; totalPages: number }; }
-export interface DonationFilters { page?: number; limit?: number; status?: DonationStatus | ''; type?: string; from?: string; to?: string; }
+export interface DonationFilters { page?: number; limit?: number; status?: DonationStatus | ''; type?: string; projectSlug?: string; from?: string; to?: string; }
 const query = (filters: DonationFilters) => new URLSearchParams(Object.entries(filters).filter(([, v]) => v !== '' && v !== undefined).map(([k, v]) => [k, String(v)])).toString();
 export const donationApi = {
-  create: (data: { donorName: string; donorContact: string; donorEmail?: string; type: string; amount?: number; currency?: string; message?: string }) => apiRequest('/donations', { method: 'POST', body: JSON.stringify({ ...data, currency: data.currency ?? 'XOF' }) }),
+  create: (data: { donorName: string; donorContact: string; donorEmail?: string; type: string; amount?: number; currency?: string; message?: string; projectSlug?: string }) => apiRequest('/donations', { method: 'POST', body: JSON.stringify({ ...data, currency: data.currency ?? 'XOF' }) }),
   admin: {
     list: (filters: DonationFilters = {}) => apiRequest<Page<Donation>>(`/admin/donations?${query({ page: 1, limit: 20, ...filters })}`),
     one: (id: string) => apiRequest<Donation>(`/admin/donations/${id}`),

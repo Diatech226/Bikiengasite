@@ -10,12 +10,14 @@ export class CreateDonationDto {
   @IsOptional() @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) @Max(999999999) amount?: number;
   @IsOptional() @IsString() @Matches(/^[A-Z]{3}$/) currency?: string;
   @IsOptional() @IsString() @MaxLength(2000) message?: string;
+  @IsOptional() @IsString() @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) @MaxLength(120) projectSlug?: string;
 }
 export class DonationQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 20;
   @IsOptional() @IsEnum(DonationStatus) status?: DonationStatus;
   @IsOptional() @IsString() @MaxLength(40) type?: string;
+  @IsOptional() @IsString() @MaxLength(120) projectSlug?: string;
   @IsOptional() @IsDateString() from?: string;
   @IsOptional() @IsDateString() to?: string;
 }
