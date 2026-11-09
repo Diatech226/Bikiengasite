@@ -6,9 +6,11 @@ import { SiteDonationContent } from '../services/contentApi';
 interface DonationModalProps {
   onClose: () => void;
   defaultCategory?: string;
+  defaultMessage?: string;
+  project?: { slug: string; title: string };
 }
 
-export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory }) => {
+export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCategory, defaultMessage, project }) => {
   const { get } = useContent();
   const donation = get<SiteDonationContent>('site.donation');
   const categories = donation.categories || [];
@@ -17,7 +19,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState(defaultCategory || 'forage');
   const [amount, setAmount] = useState(() => donation.suggestedAmounts?.[0]?.label || '');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(defaultMessage || '');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +29,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
     const numericAmount = category === 'materiel' ? undefined : Number(amount.replace(/[^0-9]/g, '')) || undefined;
-    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: numericAmount, message: message.trim() || undefined }); setSubmitted(true); }
+    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: numericAmount, message: message.trim() || undefined, projectSlug: project?.slug }); setSubmitted(true); }
     catch (err) { setError(err instanceof Error ? err.message : 'La demande n’a pas pu être transmise.'); }
     finally { setLoading(false); }
   };
@@ -35,7 +37,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
+        role="dialog" aria-modal="true" aria-label="Formulaire de soutien" className="w-full max-w-xl bg-[#f3fbf5] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#c1c8c2] animate-in fade-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -71,6 +73,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 <p className="font-body-sm text-xs text-[#414844] mt-1">
                   {donation.introduction}
                 </p>
+                {project && <p className="mt-3 rounded-lg border border-[#c1ecd4] bg-white px-3 py-2 text-sm text-[#012d1d]"><strong>Chantier soutenu :</strong> {project.title}</p>}
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
@@ -95,7 +98,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="font-label-sm text-xs font-semibold text-[#012d1d] block mb-1">
                       {donation.nameLabel}
@@ -191,6 +194,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 <p className="font-body-sm text-xs text-[#414844] mt-1 max-w-sm mx-auto">
                   {donation.successMessage?.replace('{category}', categories.find((c) => c.value === category)?.label || '').replace('{amount}', category !== 'materiel' ? `(${amount})` : '').replace('{contact}', contact)}
                 </p>
+                {project && <p className="mt-2 text-sm font-semibold text-[#012d1d]">Chantier concerné : {project.title}</p>}
               </div>
 
               <button

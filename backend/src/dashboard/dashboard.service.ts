@@ -13,7 +13,7 @@ export class DashboardService {
       this.articles.countDocuments(),
       this.articles.countDocuments({ status: ArticleStatus.PUBLISHED }),
       this.articles.countDocuments({ status: ArticleStatus.DRAFT }),
-      this.articles.countDocuments({ isFeatured: true }),
+      this.articles.countDocuments({ isFeatured: true, status: ArticleStatus.PUBLISHED }),
       this.articles.aggregate<{ total: number }>([{ $group: { _id: null, total: { $sum: '$viewsCount' } } }]),
       this.donations.countDocuments({ status: DonationStatus.PENDING }),
       this.donations.countDocuments({ status: DonationStatus.CONFIRMED }),

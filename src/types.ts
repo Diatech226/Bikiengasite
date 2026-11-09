@@ -20,6 +20,7 @@ export interface VideoItem {
   stats?: string;
   statsIcon?: string;
   description?: string;
+  type: 'reportage' | 'chronique' | 'projet';
 }
 
 export interface ArticleItem {
@@ -39,13 +40,4 @@ export interface ArticleItem {
   isFeatured?: boolean;
   viewsCount?: number;
   updatedAt?: string;
-}
-
-export interface MetricCard {
-  value: string;
-  label: string;
-  sublabel?: string;
-  icon: string;
-  bgColor: string;
-  textColor: string;
 }
