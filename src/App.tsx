@@ -1,3 +1,6 @@
+import { articleApi } from './services/articleApi';
+import { parseRoute, tabPath, itemPath } from './routing/routes';
+import { toVideo } from './features/content/ContentContext';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -18,6 +21,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { AgricultureScreen } from './screens/AgricultureScreen';
 import { ElevageScreen } from './screens/ElevageScreen';
 import { HumanitaireScreen } from './screens/HumanitaireScreen';
+import { ProjetsScreen } from './screens/ProjetsScreen';
 import { AdminScreen } from './features/admin/AdminScreen';
 import { ArticleItem, TabType, VideoItem } from './types';
 import { useToast } from './hooks/useToast';
@@ -27,27 +31,84 @@ import { useContent } from './features/content/ContentContext';
 import { SiteBrandContent, SiteContactContent, SiteFooterContent, SiteNavigationContent } from './services/contentApi';
 
 export default function App() {
-  const { get, status: contentStatus, refresh: refreshContent } = useContent();
+  const { get, mediaItems, status: contentStatus, refresh: refreshContent } = useContent();
   const brand = get<SiteBrandContent>('site.brand');
   const footer = get<SiteFooterContent>('site.footer');
   const contact = get<SiteContactContent>('site.contact');
   const navigation = get<SiteNavigationContent>('site.navigation');
-  const [currentTab, setCurrentTab] = useState<TabType>(() => {
-    const requested = new URLSearchParams(window.location.search).get('tab');
-    return requested === 'agriculture' || requested === 'elevage' || requested === 'humanitaire' ? requested : 'accueil';
-  });
-  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
-  const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);
+  const [pathname, setPathname] = useState(window.location.pathname);
+  const [previewArticle, setPreviewArticle] = useState<ArticleItem | null>(null);
+  const route = parseRoute(pathname);
+  const currentTab = route.tab;
+  const navigate = (path: string, reader = false, replace = false) => {
+    if (path === pathname && !replace) return;
+    window.history[replace ? 'replaceState' : 'pushState']({ reader, returnPath: tabPath(currentTab) }, '', path);
+    setPathname(window.location.pathname);
+    setPreviewArticle(null);
+    setIsSearchOpen(false);
+    setIsBookmarksOpen(false);
+  };
+  const setCurrentTab = (tab: TabType) => navigate(tabPath(tab));
+  const setActiveVideo = (video: VideoItem | null) => {
+    if (video) navigate(itemPath('reportages', video.slug || video.id), true);
+    else closeReader();
+  };
+  const setActiveArticle = (article: ArticleItem | null) => {
+    if (!article) { setPreviewArticle(null); if (route.kind) closeReader(); }
+    else if (currentTab === 'admin') setPreviewArticle(article);
+    else navigate(itemPath('articles', article.slug || article.id), true);
+  };
+  const closeReader = () => {
+    if (window.history.state?.reader) window.history.back();
+    else navigate('/', false, true);
+  };
+  useEffect(() => {
+    const onPopState = () => {
+      setPathname(window.location.pathname);
+      setPreviewArticle(null);
+      setIsSearchOpen(false); setIsBookmarksOpen(false); setIsDonationOpen(false);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
-  const [donationContext, setDonationContext] = useState<{ category?: string; message?: string; project?: { slug: string; title: string } }>({});
+  const [donationCategory, setDonationCategory] = useState<string | undefined>(undefined);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
 
+  const handleOpenDonation = (category?: string) => {
+    setDonationCategory(category);
+    setIsDonationOpen(true);
+  };
+
   const { message: toastMessage, showToast } = useToast();
   const { bookmarks, toggleBookmark: handleToggleBookmark } = useBookmarks(showToast);
   const { articles, loading: articlesLoading, error: articlesError, refresh: refreshArticles } = useArticles();
+
+  const [detailRetry, setDetailRetry] = useState(0);
+  const [articleDetail, setArticleDetail] = useState<{ slug: string; article?: ArticleItem; error?: boolean } | null>(null);
+  useEffect(() => {
+    if (route.kind !== 'articles' || !route.slug) return;
+    const slug = route.slug;
+    const controller = new AbortController();
+    void articleApi.public.bySlug(slug, controller.signal).then(article => {
+      if (!controller.signal.aborted) setArticleDetail({ slug, article });
+    }).catch(cause => {
+      if (controller.signal.aborted) return;
+      console.error('[article] Chargement du lien direct impossible', cause);
+      setArticleDetail({ slug, error: true });
+    });
+    return () => controller.abort();
+  }, [route.kind, route.slug, detailRetry]);
+  const detailLoading = route.kind === 'articles' && articleDetail?.slug !== route.slug;
+  const detailError = route.kind === 'articles' && articleDetail?.slug === route.slug && articleDetail?.error;
+  const activeVideo = route.kind === 'reportages'
+    ? mediaItems.map(toVideo).find(item => item.slug === route.slug || item.id === route.slug) || null : null;
+  const activeArticle = previewArticle || (route.kind === 'articles'
+    ? (articleDetail?.slug === route.slug ? articleDetail?.article : null) || articles.find(item => item.slug === route.slug || item.id === route.slug) || null : null);
+  const missingItem = route.kind && !activeVideo && !activeArticle && contentStatus !== 'loading' && !articlesLoading && !detailLoading;
 
   // Scroll to top on tab change (called unconditionally before early returns)
   useEffect(() => {
@@ -73,8 +134,6 @@ export default function App() {
     }
   };
 
-  if (contentStatus === 'loading') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]" role="status">Chargement du contenu…</div>;
-  if (contentStatus === 'error') return <div className="min-h-screen grid place-items-center bg-[#f8fbf9]"><div className="text-center"><p>Le contenu est momentanément indisponible.</p><button className="mt-4 px-4 py-2 rounded-full bg-[#012d1d] text-white" onClick={() => void refreshContent()}>Réessayer</button></div></div>;
 
 
   return (
@@ -87,26 +146,35 @@ export default function App() {
         onOpenProfile={() => setIsProfileOpen(true)}
         savedCount={bookmarks.length}
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
-        onOpenDonation={() => setIsDonationOpen(true)}
+        onOpenDonation={() => setCurrentTab('projets')}
       />
 
       {/* Main Responsive Content Container */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-20 pb-24 md:pb-12">
         <main className="w-full">
-          {currentTab === 'accueil' && (
+          {(contentStatus === 'degraded' || articlesError || detailError) && <aside role="status" className="mb-4 rounded-lg border border-amber-700 bg-amber-50 p-4 text-sm text-amber-950">
+            <p>Mode dégradé : des contenus locaux de secours sont affichés. Ils peuvent être anciens.</p>
+            <button className="underline mt-2" onClick={() => { void refreshContent(); void refreshArticles(); setDetailRetry(value => value + 1); }}>Réessayer le chargement</button>
+          </aside>}
+          {detailLoading && !activeArticle && <p role="status">Chargement de l’article…</p>}
+          {(route.notFound || missingItem) && <section className="public-hero"><h1>{detailError ? "Article indisponible" : "Page introuvable"}</h1><p>{detailError ? "Impossible de charger cet article pour le moment. Réessayez lorsque la connexion au serveur sera rétablie." : "Ce lien ne correspond à aucun contenu disponible."}</p><a href="/" onClick={e => { e.preventDefault(); setCurrentTab('accueil'); }}>Retour à l’accueil</a></section>}
+          {currentTab === 'accueil' && !route.notFound && !route.kind && (
             <HomeScreen
               articles={articles}
               onOpenVideo={(v) => setActiveVideo(v)}
               onOpenArticle={(a) => setActiveArticle(a)}
-              onOpenDonation={() => setIsDonationOpen(true)}
-              onParticipateProject={(project) => {
-                const category = project.sector === 'agriculture' ? 'arbres' : project.sector === 'elevage' ? 'materiel' : 'forage';
-                setDonationContext({ category, project: { slug: project.slug || project.id, title: project.title } });
-                setIsDonationOpen(true);
-              }}
+              onOpenDonation={() => setCurrentTab('projets')}
+              onNavigateToProjects={() => setCurrentTab('projets')}
               articlesLoading={articlesLoading}
               articlesError={articlesError}
               onRetryArticles={() => void refreshArticles()}
+            />
+          )}
+
+          {currentTab === 'projets' && (
+            <ProjetsScreen
+              onSelectProject={(category) => handleOpenDonation(category)}
+              onBackToHome={() => setCurrentTab('accueil')}
             />
           )}
 
@@ -120,14 +188,14 @@ export default function App() {
           {currentTab === 'elevage' && (
             <ElevageScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenDonation={() => setIsDonationOpen(true)}
+              onOpenDonation={() => handleOpenDonation()}
             />
           )}
 
           {currentTab === 'humanitaire' && (
             <HumanitaireScreen
               onOpenVideo={(v) => setActiveVideo(v)}
-              onOpenDonation={() => setIsDonationOpen(true)}
+              onOpenDonation={() => setCurrentTab('projets')}
             />
           )}
 
@@ -145,7 +213,7 @@ export default function App() {
       </div>
 
       {/* Responsive Desktop & Tablet Footer */}
-      <footer className="w-full bg-[#012d1d] text-white border-t border-[#02442c] hidden md:block">
+      <footer className="w-full bg-[#012d1d] text-white border-t border-[#02442c] mb-20 md:mb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Col 1: Brand & Cheick Vision */}
@@ -166,9 +234,6 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-[#dce5de] leading-relaxed max-w-md">
-                {footer.description}
-              </p>
               <div className="flex items-center gap-2 text-xs text-[#ffdcbd]">
                 <span className="material-symbols-outlined text-[16px]">location_on</span>
                 <span>{contact.location}</span>
@@ -176,7 +241,6 @@ export default function App() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#dce5de]">
                 <a className="hover:text-white" href={`mailto:${contact.email}`}>{contact.email}</a>
                 <a className="hover:text-white" href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a>
-                {contact.whatsapp && <a className="hover:text-white" href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">WhatsApp</a>}
               </div>
             </div>
 
@@ -185,41 +249,11 @@ export default function App() {
               <h4 className="font-label-md text-sm font-bold uppercase tracking-wider text-[#ffca98]">
                 {footer.navigationTitle}
               </h4>
-              <ul className="flex flex-col gap-2 text-sm text-[#dce5de]">
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('accueil')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'accueil')?.footerLabel}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('agriculture')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'agriculture')?.footerLabel}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('elevage')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'elevage')?.footerLabel}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setCurrentTab('humanitaire')}
-                    className="hover:text-white transition-colors"
-                  >
-                    {navigation.items.find((item) => item.id === 'humanitaire')?.footerLabel}
-                  </button>
-                </li>
-
-              </ul>
+              <nav aria-label="Navigation de pied de page" className="flex flex-col gap-2">
+                {navigation.items.map(item => <a key={item.id} href={tabPath(item.id)} onClick={e => { e.preventDefault(); setCurrentTab(item.id); }}>{item.footerLabel || item.label}</a>)}
+                <a href="/projets" onClick={e => { e.preventDefault(); setCurrentTab('projets'); }}>Projets</a>
+                <a href="/admin" onClick={e => { e.preventDefault(); setCurrentTab('admin'); }}>Administration</a>
+              </nav>
             </div>
 
             {/* Col 3: Engagement & Contact */}
@@ -227,9 +261,6 @@ export default function App() {
               <h4 className="font-label-md text-sm font-bold uppercase tracking-wider text-[#ffca98]">
                 {footer.supportTitle}
               </h4>
-              <p className="text-xs text-[#dce5de] leading-relaxed">
-                {footer.supportDescription}
-              </p>
               <div className="flex flex-col gap-2 mt-1">
                 <button
                   onClick={() => setIsDonationOpen(true)}
@@ -250,11 +281,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-[#dce5de]/70 gap-4">
+          <div className="pt-8 border-t border-white/10 text-center text-xs text-[#dce5de]/70">
             <p>{footer.copyright}</p>
-            <div className="flex items-center gap-4">
-              <span>{footer.signature}</span>
-            </div>
           </div>
         </div>
       </footer>
@@ -281,19 +309,7 @@ export default function App() {
             isBookmarked={bookmarks.includes(activeVideo.id)}
             onToggleBookmark={handleToggleBookmark}
             onShare={handleShare}
-            onReadArticle={(v) => {
-              setActiveArticle({
-                id: v.id,
-                title: v.title,
-                date: v.date,
-                readTime: v.duration,
-                image: v.image,
-                alt: v.alt,
-                excerpt: v.summary,
-                fullText: v.fullText || v.summary,
-                category: v.tagLabel,
-              });
-            }}
+
           />
         )}
 
@@ -315,7 +331,13 @@ export default function App() {
 
         {/* Donation / Support Modal */}
         {isDonationOpen && (
-          <DonationModal defaultCategory={donationContext.category} defaultMessage={donationContext.message} project={donationContext.project} onClose={() => { setIsDonationOpen(false); setDonationContext({}); }} />
+          <DonationModal
+            onClose={() => {
+              setIsDonationOpen(false);
+              setDonationCategory(undefined);
+            }}
+            defaultCategory={donationCategory}
+          />
         )}
 
         {/* Search Modal */}

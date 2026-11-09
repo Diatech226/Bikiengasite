@@ -1,4 +1,6 @@
+import { tabPath } from '../routing/routes';
 import React from 'react';
+import { ChickenIcon } from './ChickenIcon';
 import { useContent } from '../features/content/ContentContext';
 import { SiteBrandContent, SiteNavigationContent, SiteProfileContent } from '../services/contentApi';
 import { TabType } from '../types';
@@ -26,7 +28,6 @@ export const Header: React.FC<HeaderProps> = ({
   const brand = get<SiteBrandContent>('site.brand'); const navigation = get<SiteNavigationContent>('site.navigation'); const profile = get<SiteProfileContent>('site.profile');
   const icons = { accueil: 'home', agriculture: 'eco', elevage: 'cruelty_free', humanitaire: 'volunteer_activism' } as const;
   const navItems = (navigation.items || []).map((item) => ({ tab: item.id, label: item.label, icon: icons[item.id] }));
-  const currentTitle = navItems.find((item) => item.tab === currentTab)?.label || '';
 
   return (
     <header className="fixed top-0 w-full z-40 pt-safe bg-[#f3fbf5]/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.05)] border-b border-[#e2eae4]">
@@ -51,9 +52,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-headline-sm text-[1.125rem] md:text-xl text-[#012d1d] font-bold truncate leading-tight">
                 {brand.name}
               </span>
-              <span className="hidden sm:inline-block md:hidden text-xs px-2 py-0.5 rounded-full bg-[#e2eae4] text-[#012d1d] font-semibold">
-                {currentTitle}
-              </span>
             </div>
           </div>
         </button>
@@ -63,9 +61,10 @@ export const Header: React.FC<HeaderProps> = ({
           {navItems.map((item) => {
             const isActive = currentTab === item.tab;
             return (
-              <button
+              <a
                 key={item.tab}
-                onClick={() => onTabChange(item.tab)}
+                href={tabPath(item.tab)}
+              onClick={(e) => { if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) { e.preventDefault(); onTabChange(item.tab); } }}
                 className={`flex items-center gap-2 px-3.5 lg:px-4 py-2 rounded-full font-label-md text-sm transition-all ${
                   isActive
                     ? 'bg-[#012d1d] text-white shadow-sm font-bold'
@@ -73,15 +72,15 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <span
-                  className="material-symbols-outlined text-[19px]"
+                  className={item.tab === 'elevage' ? 'inline-flex items-center justify-center w-[19px] h-[19px]' : 'material-symbols-outlined text-[19px]'}
                   style={{
                     fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                   }}
                 >
-                  {item.icon}
+                  {item.tab === 'elevage' ? <ChickenIcon className="w-[19px] h-[19px]" filled={isActive} /> : item.icon}
                 </span>
                 <span className="hidden xl:inline">{item.label}</span>
-              </button>
+              </a>
             );
           })}
         </nav>
@@ -92,29 +91,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenSearch}
             aria-label={navigation.searchLabel}
-            className="w-10 h-10 md:w-auto md:px-3.5 md:py-2 flex items-center justify-center gap-2 rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors border border-transparent md:border-[#c1c8c2]/50"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors"
+            title={navigation.searchLabel}
           >
             <span className="material-symbols-outlined text-[20px]">search</span>
-            <span className="hidden lg:inline text-xs font-medium text-[#717973]">
-              {navigation.searchLabel}
-            </span>
-          </button>
-
-          {/* Bookmarks */}
-          <button
-            onClick={onOpenBookmarks}
-            aria-label="Articles et vidéos enregistrés"
-            className="relative hidden sm:flex w-10 h-10 items-center justify-center rounded-full text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] transition-colors"
-            title="Mes enregistrements"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              {savedCount > 0 ? 'bookmark' : 'bookmark_border'}
-            </span>
-            {savedCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#7d562d] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
-                {savedCount}
-              </span>
-            )}
           </button>
 
           {/* Desktop Direct CTA Button */}
@@ -124,26 +104,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <span className="material-symbols-outlined text-[17px]">volunteer_activism</span>
             <span>{navigation.supportLabel}</span>
-          </button>
-
-          {/* Admin / Editorial Studio Button */}
-          <button
-            onClick={() => onTabChange(currentTab === 'admin' ? 'accueil' : 'admin')}
-            aria-label="Administration du Blog"
-            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 md:py-2 rounded-full text-xs font-semibold transition-all ${
-              currentTab === 'admin'
-                ? 'bg-[#012d1d] text-[#ffca98] ring-2 ring-[#ffca98] shadow-sm'
-                : 'text-[#414844] hover:text-[#012d1d] hover:bg-[#e2eae4] border border-[#c1c8c2]/50'
-            }`}
-            title="Administration & Gestion du Blog"
-          >
-            <span
-              className="material-symbols-outlined text-[18px]"
-              style={{ fontVariationSettings: currentTab === 'admin' ? "'FILL' 1" : "'FILL' 0" }}
-            >
-              admin_panel_settings
-            </span>
-            <span className="hidden md:inline">Admin Blog</span>
           </button>
 
           {/* Profile Button */}
