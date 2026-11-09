@@ -34,7 +34,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); if (!name.trim() || loading) return; setLoading(true); setError('');
     const numericAmount = category === 'materiel' ? undefined : Number(amount.replace(/[^0-9]/g, '')) || undefined;
-    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: numericAmount, message: message.trim() || undefined }); setSubmitted(true); }
+    try { await donationApi.create({ donorName: name.trim(), donorContact: contact.trim(), donorEmail: email.trim() || undefined, type: category, amount: numericAmount, message: message.trim() || undefined, projectSlug: project?.slug }); setSubmitted(true); }
     catch (err) { setError(err instanceof Error ? err.message : 'La demande n’a pas pu être transmise.'); }
     finally { setLoading(false); }
   };
@@ -75,6 +75,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 <p id="donation-notice" className="font-body-sm text-xs text-[#414844] mt-1">
                   Ce formulaire transmet une intention de soutien. Aucun paiement n’est effectué et aucun montant n’est débité.
                 </p>
+                {project && <p className="mt-3 rounded-lg border border-[#c1ecd4] bg-white px-3 py-2 text-sm text-[#012d1d]"><strong>Chantier soutenu :</strong> {project.title}</p>}
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
@@ -196,6 +197,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ onClose, defaultCa
                 <p className="font-body-sm text-xs text-[#414844] mt-1 max-w-sm mx-auto">
                   Aucun paiement n’a été effectué. L’équipe pourra vous recontacter pour organiser votre soutien.
                 </p>
+                {project && <p className="mt-2 text-sm font-semibold text-[#012d1d]">Chantier concerné : {project.title}</p>}
               </div>
 
               <button
