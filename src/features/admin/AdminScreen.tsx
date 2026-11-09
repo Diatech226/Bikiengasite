@@ -72,7 +72,7 @@ export function AdminScreen({ onPreviewArticle, onExitAdmin }: Props) {
   if (restoring) return <p className="admin-state">Restauration de la session…</p>;
   if (!authenticated) return <AdminLogin email={email} password={password} hasError={Boolean(loginError)} loading={loginLoading} errorMessage={loginError} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={login} onExit={onExitAdmin} />;
 
-  const tabs: [Section, string][] = [['overview', 'Vue d’ensemble'], ['articles', 'Articles'], ['content', 'Contenus du site'], ['donations', 'Dons'], ['contacts', 'Messages'], ['categories', 'Catégories']];
+  const tabs: [Section, string][] = [['overview', 'Vue d’ensemble'], ['articles', 'Articles'], ['content', 'Contenus du site'], ['donations', 'Soutiens'], ['contacts', 'Messages'], ['categories', 'Catégories']];
   return <div className="flex flex-col gap-6 pb-12">
     <header className="bg-[#012d1d] text-white rounded-3xl p-5 flex flex-col md:flex-row gap-4 justify-between md:items-center">
       <div><span className="text-[#ffca98] text-xs font-bold uppercase">Secrétariat de Nagréogo</span><h1 className="text-2xl font-bold">Administration Bikienga</h1></div>

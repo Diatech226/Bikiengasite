@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { contentApi, MediaItem } from '../../../services/contentApi';
 import { Donation, donationApi, DonationStatus } from '../../../services/donationApi';
 const statuses: DonationStatus[]=['PENDING','CONTACTED','CONFIRMED','RECEIVED','CANCELLED'];
 const labels:Record<DonationStatus,string>={PENDING:'En attente',CONTACTED:'Contacté',CONFIRMED:'Confirmé',RECEIVED:'Reçu',CANCELLED:'Annulé'};
